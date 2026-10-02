@@ -23,6 +23,7 @@ export const authRouter = router({
             practiceAreas: z.string(),
             experienceYears: z.number().nonnegative(),
             bio: z.string(),
+            certificateUrl: z.string().optional(),
           })
           .optional(),
       })
@@ -81,6 +82,7 @@ export const authRouter = router({
             practiceAreas: input.advocateDetails.practiceAreas,
             experienceYears: input.advocateDetails.experienceYears,
             bio: input.advocateDetails.bio,
+            certificateUrl: input.advocateDetails.certificateUrl,
             status: 'pending',
           });
         }
@@ -183,10 +185,12 @@ export const authRouter = router({
     }
 
     let advocateStatus: string | null = null;
+    let advocateProfile: any = null;
     if (user.role === 'advocate') {
       const profile = await db.query.advocateProfiles.findFirst({
         where: eq(advocateProfiles.userId, user.id),
       });
+      advocateProfile = profile;
       advocateStatus = profile ? profile.status : 'pending';
     }
 
@@ -197,7 +201,82 @@ export const authRouter = router({
         email: user.email,
         role: user.role,
         advocateStatus,
+        advocateProfile,
       },
     };
   }),
+
+  updateProfile: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(2).optional(),
+        bio: z.string().optional(),
+        practiceAreas: z.string().optional(),
+        experienceYears: z.number().nonnegative().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (input.name) {
+        await db
+          .update(users)
+          .set({ name: input.name, updatedAt: new Date() })
+          .where(eq(users.id, ctx.user.id));
+      }
+
+      if (ctx.user.role === 'advocate' && (input.bio !== undefined || input.practiceAreas !== undefined || input.experienceYears !== undefined)) {
+        const updateData: any = { updatedAt: new Date() };
+        if (input.bio !== undefined) updateData.bio = input.bio;
+        if (input.practiceAreas !== undefined) updateData.practiceAreas = input.practiceAreas;
+        if (input.experienceYears !== undefined) updateData.experienceYears = input.experienceYears;
+
+        await db
+          .update(advocateProfiles)
+          .set(updateData)
+          .where(eq(advocateProfiles.userId, ctx.user.id));
+      }
+
+      const updatedUser = await db.query.users.findFirst({
+        where: eq(users.id, ctx.user.id),
+      });
+
+      return {
+        success: true,
+        user: {
+          id: updatedUser!.id,
+          name: updatedUser!.name,
+          email: updatedUser!.email,
+          role: updatedUser!.role,
+        },
+      };
+    }),
+
+  changePassword: protectedProcedure
+    .input(
+      z.object({
+        currentPassword: z.string(),
+        newPassword: z.string().min(6),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, ctx.user.id),
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
+      }
+
+      const match = await bcrypt.compare(input.currentPassword, user.passwordHash);
+      if (!match) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Incorrect current password' });
+      }
+
+      const newHash = await bcrypt.hash(input.newPassword, 10);
+      await db
+        .update(users)
+        .set({ passwordHash: newHash, updatedAt: new Date() })
+        .where(eq(users.id, ctx.user.id));
+
+      return { success: true };
+    }),
 });

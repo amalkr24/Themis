@@ -31,9 +31,6 @@ import {
   Users,
   User,
   Bell,
-  UserCheck,
-  FolderOpen,
-  BarChart3,
   MessageSquare,
 } from 'lucide-react';
 
@@ -46,12 +43,12 @@ function MessageBell() {
   return (
     <Link
       to="/messages"
-      className="relative p-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-all"
+      className="relative p-2.5 neo-btn text-slate-700 hover:text-black rounded-xl flex items-center justify-center"
       title="Client & Counsel Messages"
     >
-      <MessageSquare size={15} />
+      <MessageSquare size={16} />
       {count > 0 && (
-        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-600 px-1 text-[9px] font-extrabold text-white ring-2 ring-slate-950 animate-pulse">
+        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-black px-1 text-[9px] font-extrabold text-white ring-2 ring-white">
           {count > 99 ? '99+' : count}
         </span>
       )}
@@ -68,12 +65,12 @@ function NotificationBell() {
   return (
     <Link
       to="/notifications"
-      className="relative p-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-all"
+      className="relative p-2.5 neo-btn text-slate-700 hover:text-black rounded-xl flex items-center justify-center"
       title="Notifications"
     >
-      <Bell size={15} />
+      <Bell size={16} />
       {count > 0 && (
-        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-indigo-600 px-1 text-[9px] font-extrabold text-white ring-2 ring-slate-950 animate-pulse">
+        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-black px-1 text-[9px] font-extrabold text-white ring-2 ring-white">
           {count > 99 ? '99+' : count}
         </span>
       )}
@@ -110,64 +107,69 @@ export default function App() {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <div className="flex flex-col min-h-screen">
-            {/* Header Navigation */}
-            <nav className="glass-nav sticky top-0 z-40 px-4 md:px-8 py-3.5 flex justify-between items-center">
-              <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white tracking-wide">
-                <Scale size={22} className="text-indigo-400" />
-                Themis
+          <div className="flex flex-col min-h-screen bg-[#edf0f5] text-[#0f172a]">
+            {/* Header Navigation with Monochrome Neomorphism */}
+            <nav className="neo-header sticky top-0 z-40 px-4 md:px-8 py-3 flex justify-between items-center">
+              <Link to="/" className="flex items-center gap-2.5 text-xl font-extrabold text-black tracking-tight group">
+                <div className="w-9 h-9 rounded-xl bg-black text-white flex items-center justify-center shadow-[4px_4px_10px_rgba(0,0,0,0.18),-2px_-2px_6px_rgba(255,255,255,0.9)] group-hover:scale-105 transition-transform">
+                  <Scale size={20} />
+                </div>
+                <span>Themis</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-slate-600 border border-black/5">
+                  Legal Aid
+                </span>
               </Link>
 
               {/* Desktop Navigation Links */}
               {auth.isAuthenticated && auth.user?.role === 'admin' ? (
-                <div className="hidden lg:flex items-center gap-5 text-sm font-medium text-slate-400">
-                  <Link to="/dashboard?tab=overview" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                    <LayoutDashboard size={15} /> Dashboard
+                <div className="hidden lg:flex items-center gap-3 text-xs font-bold text-slate-600">
+                  <Link to="/dashboard?tab=overview" className="px-3 py-1.5 rounded-xl hover:text-black transition-all">
+                    Dashboard
                   </Link>
-                  <Link to="/dashboard?tab=users" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                    <Users size={15} /> Users
+                  <Link to="/dashboard?tab=users" className="px-3 py-1.5 rounded-xl hover:text-black transition-all">
+                    Users
                   </Link>
-                  <Link to="/dashboard?tab=advocates" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                    <UserCheck size={15} /> Advocates
+                  <Link to="/dashboard?tab=advocates" className="px-3 py-1.5 rounded-xl hover:text-black transition-all">
+                    Advocates
                   </Link>
-                  <Link to="/dashboard?tab=cases" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                    <FolderOpen size={15} /> Cases
+                  <Link to="/dashboard?tab=cases" className="px-3 py-1.5 rounded-xl hover:text-black transition-all">
+                    Cases
                   </Link>
-                  <Link to="/dashboard?tab=documents" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                    <FileText size={15} /> Documents
+                  <Link to="/dashboard?tab=documents" className="px-3 py-1.5 rounded-xl hover:text-black transition-all">
+                    Documents
                   </Link>
-                  <Link to="/dashboard?tab=reports" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                    <BarChart3 size={15} /> Reports
+                  <Link to="/dashboard?tab=reports" className="px-3 py-1.5 rounded-xl hover:text-black transition-all">
+                    Reports
                   </Link>
                 </div>
               ) : (
-                <div className="hidden md:flex items-center gap-5 text-sm font-medium text-slate-400">
+                <div className="hidden md:flex items-center gap-3 text-xs font-bold text-slate-600">
                   {auth.isAuthenticated && (
                     <>
-                      <Link to="/search" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                        <SearchIcon size={15} /> {auth.user?.role === 'advocate' ? 'Legal Research' : 'Legal Search'}
+                      <Link to="/search" className="px-3 py-1.5 rounded-xl hover:text-black transition-all flex items-center gap-1.5">
+                        <SearchIcon size={14} /> {auth.user?.role === 'advocate' ? 'Legal Research' : 'Search Laws'}
                       </Link>
 
                       {/* Citizen-Only Navigation Links */}
                       {auth.user?.role === 'citizen' && (
                         <>
-                          <Link to="/assessment" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                            <HelpCircle size={15} /> Assessment
+                          <Link to="/assessment" className="px-3 py-1.5 rounded-xl hover:text-black transition-all flex items-center gap-1.5">
+                            <HelpCircle size={14} /> Assessment
                           </Link>
-                          <Link to="/advocates" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                            <Users size={15} /> Find Advocate
+                          <Link to="/advocates" className="px-3 py-1.5 rounded-xl hover:text-black transition-all flex items-center gap-1.5">
+                            <Users size={14} /> Find Advocate
                           </Link>
                         </>
                       )}
 
                       {/* Available for Citizens & Advocates */}
-                      <Link to="/documents" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                        <FileText size={15} /> Documents
+                      <Link to="/documents" className="px-3 py-1.5 rounded-xl hover:text-black transition-all flex items-center gap-1.5">
+                        <FileText size={14} /> Documents
                       </Link>
 
                       {/* Universal Workspace link */}
-                      <Link to="/dashboard" className="hover:text-white flex items-center gap-1.5 transition-colors">
-                        <LayoutDashboard size={15} /> Workspace
+                      <Link to="/dashboard" className="px-3 py-1.5 rounded-xl hover:text-black transition-all flex items-center gap-1.5">
+                        <LayoutDashboard size={14} /> Workspace
                       </Link>
                     </>
                   )}
@@ -177,37 +179,37 @@ export default function App() {
               {/* User Actions */}
               <div className="flex items-center gap-2.5 text-xs font-semibold">
                 {auth.isAuthenticated ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     {auth.user?.role !== 'admin' && (
                       <Link
                         to="/my-documents"
-                        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-400 rounded-xl transition-all text-[11px]"
+                        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 neo-pill hover:text-black rounded-xl text-[11px] font-bold"
                       >
-                        <FileText size={12} /> My Docs
+                        <FileText size={13} /> My Docs
                       </Link>
                     )}
                     <MessageBell />
                     <NotificationBell />
                     <Link
                       to="/profile"
-                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-all text-[11px]"
+                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 neo-pill hover:text-black rounded-xl text-[11px] font-bold"
                     >
-                      <User size={12} /> {auth.user?.name?.split(' ')[0]}
+                      <User size={13} /> {auth.user?.name?.split(' ')[0]}
                     </Link>
                     <button
                       onClick={auth.logout}
-                      className="p-2 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 rounded-xl transition-all"
+                      className="p-2 neo-btn text-slate-500 hover:text-rose-600 rounded-xl"
                       title="Log Out"
                     >
-                      <LogOut size={15} />
+                      <LogOut size={16} />
                     </button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
-                    <Link to="/login" className="px-4 py-2 border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-all">
+                  <div className="flex items-center gap-3">
+                    <Link to="/login" className="px-4 py-2 neo-btn text-slate-800 font-bold rounded-xl text-xs">
                       Sign In
                     </Link>
-                    <Link to="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg transition-all">
+                    <Link to="/register" className="px-4 py-2 neo-btn-black font-bold rounded-xl text-xs">
                       Sign Up
                     </Link>
                   </div>
@@ -261,22 +263,24 @@ export default function App() {
               </Routes>
             </main>
 
-            {/* Footer */}
-            <footer className="py-8 border-t border-slate-900/80 mt-auto">
-              <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-600">
-                <div className="flex items-center gap-2 font-semibold text-slate-500">
-                  <Scale size={16} className="text-indigo-500" />
+            {/* Footer with Neomorphic styling */}
+            <footer className="py-8 mt-auto border-t border-black/5 bg-[#e9edf3]">
+              <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
+                <div className="flex items-center gap-2 font-bold text-slate-800">
+                  <div className="w-5 h-5 rounded-md bg-black text-white flex items-center justify-center text-[10px]">
+                    <Scale size={12} />
+                  </div>
                   Themis Digital Legal Aid Platform
                 </div>
                 {auth.isAuthenticated && (
-                  <div className="flex gap-6 font-medium">
-                    <Link to="/search" className="hover:text-slate-400 transition-colors">Legal Search</Link>
+                  <div className="flex gap-6 font-semibold">
+                    <Link to="/search" className="hover:text-black transition-colors">Legal Search</Link>
                     {auth.user?.role === 'citizen' && (
-                      <Link to="/advocates" className="hover:text-slate-400 transition-colors">Find Advocate</Link>
+                      <Link to="/advocates" className="hover:text-black transition-colors">Find Advocate</Link>
                     )}
                   </div>
                 )}
-                <span>&copy; {new Date().getFullYear()} Themis. All rights reserved.</span>
+                <span>&copy; {new Date().getFullYear()} Themis. Monochrome Neomorphic Edition.</span>
               </div>
             </footer>
           </div>

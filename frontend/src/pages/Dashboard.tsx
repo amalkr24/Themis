@@ -248,21 +248,19 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 relative">
-      <div className="absolute top-0 right-10 w-[400px] h-[400px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none" />
-
       {/* Header Banner */}
-      <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-3xl backdrop-blur-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="neo-card p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             {user?.role === 'admin' ? 'Court Registry & Administration' : 'Legal Workspace'}
           </span>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">Hello, {user?.name}</h1>
-          <p className="text-slate-400 text-xs mt-1">
+          <h1 className="text-2xl md:text-3xl font-black text-[#111317]">Hello, {user?.name}</h1>
+          <p className="text-slate-600 text-xs mt-1">
             {user?.role === 'admin'
               ? 'Central Administrative Control • User Management, Advocate Verification, Case Registry & Reports'
               : `Access your legal workspace. Role: `}
             {user?.role !== 'admin' && (
-              <span className="capitalize text-indigo-300 font-semibold">{user?.role}</span>
+              <span className="capitalize font-bold text-[#111317]">{user?.role}</span>
             )}
           </p>
         </div>
@@ -270,7 +268,7 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
         {user?.role === 'citizen' && (
           <button
             onClick={() => setShowNewCaseModal(true)}
-            className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-lg shadow-indigo-500/20"
+            className="neo-btn-black px-6 py-3 rounded-2xl text-xs font-bold flex items-center gap-2"
           >
             <Plus size={16} /> Register New Case
           </button>
@@ -278,17 +276,17 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
 
         {user?.role === 'advocate' && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Verification Status:</span>
+            <span className="text-xs text-slate-500 font-semibold">Verification:</span>
             {user?.advocateStatus === 'approved' ? (
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-1">
+              <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#111317] text-white flex items-center gap-1.5 shadow-sm">
                 <UserCheck size={14} /> Approved Advocate
               </span>
             ) : user?.advocateStatus === 'rejected' ? (
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center gap-1">
+              <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold neo-card text-rose-600 flex items-center gap-1.5">
                 <ShieldAlert size={14} /> Rejected
               </span>
             ) : (
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center gap-1 animate-pulse">
+              <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold neo-inset-sm text-slate-800 flex items-center gap-1.5 animate-pulse">
                 <AlertCircle size={14} /> Pending Verification
               </span>
             )}
@@ -302,7 +300,7 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
       {user?.role === 'admin' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Admin Navigation Bar */}
-          <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl backdrop-blur-xl">
+          <div className="flex flex-wrap items-center gap-2 p-2 neo-inset rounded-2xl">
             {[
               { id: 'overview', label: 'Dashboard', icon: <Layers size={14} /> },
               { id: 'users', label: 'Users', icon: <Users size={14} /> },
@@ -323,14 +321,14 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                   onClick={() => setAdminTab(tab.id)}
                   className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                     active
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      ? 'neo-btn-black'
+                      : 'text-slate-600 hover:text-[#111317]'
                   }`}
                 >
                   {tab.icon}
                   {tab.label}
                   {tab.badge && (
-                    <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">
+                    <span className="px-1.5 py-0.2 rounded-full bg-white text-[#111317] text-[10px] font-black">
                       {tab.badge}
                     </span>
                   )}
@@ -343,81 +341,89 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
           {currentAdminTab === 'overview' && (
             <div className="space-y-8 animate-fadeIn">
               {/* Metrics Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl shadow">
-                  <div className="p-2.5 w-fit bg-indigo-500/10 text-indigo-400 rounded-xl mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+                <div className="neo-card p-6 flex flex-col justify-between">
+                  <div className="p-3 w-fit neo-inset-sm text-[#111317] rounded-xl mb-3">
                     <Users size={20} />
                   </div>
-                  <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Total Citizens</span>
-                  <h3 className="text-2xl font-extrabold text-white mt-0.5">{adminStats?.citizensCount || 0}</h3>
+                  <div>
+                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Total Citizens</span>
+                    <h3 className="text-3xl md:text-4xl font-black text-[#111317] mt-1">{adminStats?.citizensCount || 0}</h3>
+                  </div>
                 </div>
 
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl shadow">
-                  <div className="p-2.5 w-fit bg-emerald-500/10 text-emerald-400 rounded-xl mb-3">
+                <div className="neo-card p-6 flex flex-col justify-between">
+                  <div className="p-3 w-fit neo-inset-sm text-[#111317] rounded-xl mb-3">
                     <UserCheck size={20} />
                   </div>
-                  <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Approved Counsel</span>
-                  <h3 className="text-2xl font-extrabold text-white mt-0.5">{adminStats?.approvedAdvocatesCount || 0}</h3>
+                  <div>
+                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Approved Counsel</span>
+                    <h3 className="text-3xl md:text-4xl font-black text-[#111317] mt-1">{adminStats?.approvedAdvocatesCount || 0}</h3>
+                  </div>
                 </div>
 
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl shadow">
-                  <div className="p-2.5 w-fit bg-amber-500/10 text-amber-400 rounded-xl mb-3">
+                <div className="neo-card p-6 flex flex-col justify-between">
+                  <div className="p-3 w-fit neo-inset-sm text-[#111317] rounded-xl mb-3">
                     <AlertCircle size={20} />
                   </div>
-                  <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Pending Approvals</span>
-                  <h3 className="text-2xl font-extrabold text-white mt-0.5">{adminStats?.pendingAdvocatesCount || 0}</h3>
+                  <div>
+                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Pending Approvals</span>
+                    <h3 className="text-3xl md:text-4xl font-black text-[#111317] mt-1">{adminStats?.pendingAdvocatesCount || 0}</h3>
+                  </div>
                 </div>
 
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl shadow">
-                  <div className="p-2.5 w-fit bg-blue-500/10 text-blue-400 rounded-xl mb-3">
+                <div className="neo-card p-6 flex flex-col justify-between">
+                  <div className="p-3 w-fit neo-inset-sm text-[#111317] rounded-xl mb-3">
                     <FolderOpen size={20} />
                   </div>
-                  <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Total Cases</span>
-                  <h3 className="text-2xl font-extrabold text-white mt-0.5">{adminStats?.casesCount || 0}</h3>
+                  <div>
+                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Total Cases</span>
+                    <h3 className="text-3xl md:text-4xl font-black text-[#111317] mt-1">{adminStats?.casesCount || 0}</h3>
+                  </div>
                 </div>
               </div>
 
               {/* Pending Advocates Verification Queue */}
-              <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 shadow-xl">
+              <div className="neo-card p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-base font-bold text-white flex items-center gap-2">
-                    <Gavel className="text-indigo-400" size={18} /> Pending Advocate Verification Queue
+                  <h2 className="text-base font-bold text-[#111317] flex items-center gap-2">
+                    <Gavel className="text-[#111317]" size={18} /> Pending Advocate Verification Queue
                   </h2>
                   <button
                     onClick={() => setAdminTab('advocates')}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                    className="text-xs text-[#111317] hover:underline font-bold flex items-center gap-1"
                   >
                     View All Counsel <ArrowRight size={13} />
                   </button>
                 </div>
 
                 {pendingAdvocates && pendingAdvocates.length > 0 ? (
-                  <div className="divide-y divide-slate-800/60">
+                  <div className="divide-y divide-slate-200">
                     {pendingAdvocates.map((profile) => (
                       <div
                         key={profile.id}
                         className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                       >
                         <div className="space-y-1">
-                          <h4 className="font-bold text-white text-sm">{profile.user?.name}</h4>
-                          <p className="text-xs text-slate-400 font-light">Email: {profile.user?.email}</p>
-                          <div className="flex flex-wrap gap-3 text-[10px] text-slate-400 font-medium pt-1">
-                            <span>Bar ID: <strong className="text-slate-200">{profile.barCouncilNumber}</strong></span>
-                            <span>Exp: <strong className="text-slate-200">{profile.experienceYears} Years</strong></span>
-                            <span>Areas: <strong className="text-indigo-300">{profile.practiceAreas}</strong></span>
+                          <h4 className="font-bold text-[#111317] text-sm">{profile.user?.name}</h4>
+                          <p className="text-xs text-slate-500 font-normal">Email: {profile.user?.email}</p>
+                          <div className="flex flex-wrap gap-3 text-[10px] text-slate-600 font-medium pt-1">
+                            <span>Bar ID: <strong className="text-[#111317]">{profile.barCouncilNumber}</strong></span>
+                            <span>Exp: <strong className="text-[#111317]">{profile.experienceYears} Years</strong></span>
+                            <span>Areas: <strong className="text-[#111317]">{profile.practiceAreas}</strong></span>
                           </div>
                         </div>
 
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleVerifyAdvocate(profile.id, 'approved')}
-                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center gap-1 shadow-md shadow-emerald-500/20"
+                            className="neo-btn-black px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
                           >
                             <Check size={14} /> Approve
                           </button>
                           <button
                             onClick={() => handleVerifyAdvocate(profile.id, 'rejected')}
-                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600/20 hover:bg-rose-600 border border-rose-500/20 text-rose-400 hover:text-white transition-all flex items-center gap-1"
+                            className="neo-btn px-4 py-2 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1.5"
                           >
                             <X size={14} /> Reject
                           </button>
@@ -427,8 +433,8 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <CheckCircle2 className="mx-auto text-emerald-500/50 mb-2" size={32} />
-                    <p className="text-slate-400 text-xs">All advocate applications have been reviewed and processed.</p>
+                    <CheckCircle2 className="mx-auto text-slate-400 mb-2" size={32} />
+                    <p className="text-slate-500 text-xs font-medium">All advocate applications have been reviewed and processed.</p>
                   </div>
                 )}
               </div>
@@ -437,35 +443,35 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
 
           {/* ──────────────── 2. USERS MANAGEMENT TAB ──────────────── */}
           {currentAdminTab === 'users' && (
-            <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 animate-fadeIn">
+            <div className="neo-card p-6 space-y-6 animate-fadeIn">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Users className="text-indigo-400" size={20} /> Registered Platform Users ({filteredUsers.length})
+                  <h2 className="text-lg font-bold text-[#111317] flex items-center gap-2">
+                    <Users className="text-[#111317]" size={20} /> Registered Platform Users ({filteredUsers.length})
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Manage citizens, advocates, and administrative roles.</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Manage citizens, advocates, and administrative roles.</p>
                 </div>
 
                 {/* Filters */}
                 <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                   <div className="relative flex-1 sm:flex-none">
-                    <Search className="absolute left-3 top-2.5 text-slate-500" size={14} />
+                    <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
                     <input
                       type="text"
                       placeholder="Search users..."
                       value={userSearchQuery}
                       onChange={(e) => setUserSearchQuery(e.target.value)}
-                      className="w-full sm:w-48 pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                      className="w-full sm:w-48 pl-9 pr-3 py-1.5 neo-inset rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                   </div>
 
-                  <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                  <div className="flex items-center gap-1 p-1 neo-inset-sm rounded-xl">
                     {(['all', 'citizen', 'advocate'] as const).map((r) => (
                       <button
                         key={r}
                         onClick={() => setUserRoleFilter(r)}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                          userRoleFilter === r ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                          userRoleFilter === r ? 'neo-btn-black' : 'text-slate-600 hover:text-[#111317]'
                         }`}
                       >
                         {r}
@@ -476,9 +482,9 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
               </div>
 
               {/* Users Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-300">
-                  <thead className="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <div className="overflow-x-auto rounded-2xl neo-inset-sm p-1">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="py-3 px-4">User</th>
                       <th className="py-3 px-4">Role</th>
@@ -486,21 +492,21 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                       <th className="py-3 px-4">Joined Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-200/80">
                     {filteredUsers.map((u) => (
-                      <tr key={u.id} className="hover:bg-slate-900/50">
-                        <td className="py-3.5 px-4 font-semibold text-white">
+                      <tr key={u.id} className="hover:bg-white/40 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-[#111317]">
                           <div>{u.name}</div>
                           <div className="text-[11px] text-slate-500 font-normal">{u.email}</div>
                         </td>
                         <td className="py-3.5 px-4">
                           <span
-                            className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                            className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
                               u.role === 'admin'
-                                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                                ? 'bg-[#111317] text-white'
                                 : u.role === 'advocate'
-                                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                ? 'neo-inset-sm text-[#111317]'
+                                : 'neo-card-sm text-slate-700'
                             }`}
                           >
                             {u.role}
@@ -509,12 +515,12 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                         <td className="py-3.5 px-4">
                           {u.profile ? (
                             <span
-                              className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                              className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
                                 u.profile.status === 'approved'
-                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                  ? 'bg-[#111317] text-white'
                                   : u.profile.status === 'rejected'
-                                  ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                  : 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse'
+                                  ? 'text-rose-600 bg-rose-50'
+                                  : 'neo-inset-sm text-slate-700 animate-pulse'
                               }`}
                             >
                               {u.profile.status}
@@ -540,22 +546,22 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
 
           {/* ──────────────── 3. ADVOCATES MANAGEMENT TAB ──────────────── */}
           {currentAdminTab === 'advocates' && (
-            <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 animate-fadeIn">
+            <div className="neo-card p-6 space-y-6 animate-fadeIn">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <UserCheck className="text-indigo-400" size={20} /> Advocate Verification & Directory ({filteredAdvocates.length})
+                  <h2 className="text-lg font-bold text-[#111317] flex items-center gap-2">
+                    <UserCheck className="text-[#111317]" size={20} /> Advocate Verification & Directory ({filteredAdvocates.length})
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Review credentials, practice areas, and bar council numbers.</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Review credentials, practice areas, and bar council numbers.</p>
                 </div>
 
-                <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                <div className="flex items-center gap-1 p-1 neo-inset-sm rounded-xl">
                   {(['all', 'pending', 'approved', 'rejected'] as const).map((s) => (
                     <button
                       key={s}
                       onClick={() => setAdvocateStatusFilter(s)}
                       className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                        advocateStatusFilter === s ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                        advocateStatusFilter === s ? 'neo-btn-black' : 'text-slate-600 hover:text-[#111317]'
                       }`}
                     >
                       {s}
@@ -565,83 +571,93 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
               </div>
 
               {/* Advocates Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {filteredAdvocates.map((adv) => (
                   <div
                     key={adv.id}
-                    className="p-5 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-3 flex flex-col justify-between"
+                    className="p-6 neo-card flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-bold text-white text-base">
+                          <h3 className="font-bold text-[#111317] text-base">
                             {adv.user?.name?.startsWith('Adv.') ? adv.user?.name : `Adv. ${adv.user?.name || 'Advocate'}`}
                           </h3>
-                          <p className="text-xs text-slate-400">{adv.user?.email}</p>
+                          <p className="text-xs text-slate-500">{adv.user?.email}</p>
                         </div>
                         <span
-                          className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                          className={`px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider ${
                             adv.status === 'approved'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              ? 'bg-[#111317] text-white'
                               : adv.status === 'rejected'
-                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              ? 'text-rose-600 neo-card-sm'
+                              : 'neo-inset-sm text-slate-800'
                           }`}
                         >
                           {adv.status}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 pt-3 border-t border-slate-800/80 mt-3">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 pt-3 border-t border-slate-200 mt-3">
                         <div>
-                          <span className="text-[10px] text-slate-500 uppercase font-bold block">Bar Council ID</span>
-                          <span className="text-slate-200 font-semibold">{adv.barCouncilNumber}</span>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Bar Council ID</span>
+                          <span className="text-[#111317] font-bold">{adv.barCouncilNumber}</span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-500 uppercase font-bold block">Experience</span>
-                          <span className="text-slate-200 font-semibold">{adv.experienceYears} Years</span>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Experience</span>
+                          <span className="text-[#111317] font-bold">{adv.experienceYears} Years</span>
                         </div>
                         <div className="col-span-2">
-                          <span className="text-[10px] text-slate-500 uppercase font-bold block">Practice Areas</span>
-                          <span className="text-indigo-300 font-medium">{adv.practiceAreas}</span>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Practice Areas</span>
+                          <span className="text-[#111317] font-semibold">{adv.practiceAreas}</span>
                         </div>
                       </div>
 
-                      {adv.bio && <p className="text-xs italic text-slate-400 mt-2">"{adv.bio}"</p>}
+                      {adv.bio && <p className="text-xs italic text-slate-500 mt-2">"{adv.bio}"</p>}
                     </div>
 
                     {/* Action buttons */}
-                    <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between">
+                    <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
                       <div className="text-[11px] text-slate-500">
                         {adv.status === 'approved' && (
-                          <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                            <CheckCircle2 size={13} /> Verified & Listed in Directory
+                          <span className="text-slate-800 font-bold flex items-center gap-1">
+                            <CheckCircle2 size={13} className="text-emerald-600" /> Verified & Listed
                           </span>
                         )}
                         {adv.status === 'pending' && (
-                          <span className="text-amber-400 font-semibold">
+                          <span className="text-slate-700 font-semibold">
                             Pending Admin Verification
                           </span>
                         )}
                         {adv.status === 'rejected' && (
-                          <span className="text-rose-400 font-semibold">
+                          <span className="text-rose-600 font-semibold">
                             Application Rejected
                           </span>
                         )}
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {adv.certificateUrl && (
+                          <a
+                            href={`http://localhost:4000${adv.certificateUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded-xl text-xs font-bold neo-btn flex items-center gap-1"
+                          >
+                            <FileText size={13} /> Certificate
+                          </a>
+                        )}
                         {adv.status === 'pending' && (
                           <>
                             <button
                               onClick={() => handleVerifyAdvocate(adv.id, 'approved')}
-                              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center gap-1 shadow-md shadow-emerald-500/20"
+                              className="neo-btn-black px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1"
                             >
                               <Check size={13} /> Approve
                             </button>
                             <button
                               onClick={() => handleVerifyAdvocate(adv.id, 'rejected')}
-                              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600/20 hover:bg-rose-600 border border-rose-500/20 text-rose-400 hover:text-white transition-all flex items-center gap-1"
+                              className="neo-btn px-3.5 py-1.5 rounded-xl text-xs font-bold text-rose-600 flex items-center gap-1"
                             >
                               <X size={13} /> Reject
                             </button>
@@ -650,7 +666,7 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                         {adv.status === 'rejected' && (
                           <button
                             onClick={() => handleVerifyAdvocate(adv.id, 'approved')}
-                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center gap-1 shadow-md shadow-emerald-500/20"
+                            className="neo-btn-black px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1"
                           >
                             <Check size={13} /> Re-Approve
                           </button>
@@ -663,24 +679,24 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
             </div>
           )}
 
-          {/* ──────────────── 4. CASES REGISTRY TAB ──────────────── */}
+          {/* ──────────────── 4. CASES MANAGEMENT TAB ──────────────── */}
           {currentAdminTab === 'cases' && (
-            <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 animate-fadeIn">
+            <div className="neo-card p-6 space-y-6 animate-fadeIn">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <FolderOpen className="text-indigo-400" size={20} /> Court Case Registry ({filteredAdminCases.length})
+                  <h2 className="text-lg font-bold text-[#111317] flex items-center gap-2">
+                    <FolderOpen className="text-[#111317]" size={20} /> Court Case Registry ({filteredAdminCases.length})
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Central register of all citizen cases, hearings, and assigned counsel.</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Central register of all citizen cases, hearings, and assigned counsel.</p>
                 </div>
 
-                <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                <div className="flex items-center gap-1 p-1 neo-inset-sm rounded-xl">
                   {(['all', 'active', 'pending', 'closed'] as const).map((s) => (
                     <button
                       key={s}
                       onClick={() => setCaseStatusFilter(s)}
                       className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                        caseStatusFilter === s ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                        caseStatusFilter === s ? 'neo-btn-black' : 'text-slate-600 hover:text-[#111317]'
                       }`}
                     >
                       {s}
@@ -690,51 +706,51 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
               </div>
 
               {/* Case Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {filteredAdminCases.map((c) => (
                   <Link
                     key={c.id}
                     to={`/cases/${c.id}`}
-                    className="p-5 bg-slate-950/60 border border-slate-800 hover:border-indigo-500/40 rounded-2xl space-y-3 flex flex-col justify-between transition-all group"
+                    className="p-6 neo-card space-y-3 flex flex-col justify-between group cursor-pointer"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-2">
-                        <span className="px-2.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                        <span className="px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider neo-inset-sm text-slate-700">
                           {c.category}
                         </span>
                         <span
-                          className={`px-2.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                          className={`px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ${
                             c.status === 'active'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25'
+                              ? 'bg-[#111317] text-white'
                               : c.status === 'closed'
-                              ? 'bg-slate-800 text-slate-400'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/25'
+                              ? 'text-slate-400 neo-card-sm'
+                              : 'neo-inset-sm text-slate-800'
                           }`}
                         >
                           {c.status}
                         </span>
                       </div>
 
-                      <h3 className="font-bold text-white group-hover:text-indigo-300 transition-colors text-base line-clamp-1">
+                      <h3 className="font-bold text-[#111317] group-hover:underline transition-colors text-base line-clamp-1">
                         {c.title}
                       </h3>
-                      <p className="text-xs text-slate-400 line-clamp-2 mt-1">{c.description}</p>
+                      <p className="text-xs text-slate-500 line-clamp-2 mt-1">{c.description}</p>
 
-                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-3 border-t border-slate-800/80 mt-3">
+                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 pt-3 border-t border-slate-200 mt-3">
                         <div>
-                          <span className="text-[10px] text-slate-500 uppercase font-bold block">Citizen</span>
-                          <span className="text-slate-200 font-medium">{c.citizen?.name}</span>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Citizen</span>
+                          <span className="text-[#111317] font-semibold">{c.citizen?.name}</span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-500 uppercase font-bold block">Assigned Counsel</span>
-                          <span className="text-indigo-300 font-medium">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Assigned Counsel</span>
+                          <span className="text-[#111317] font-semibold">
                             {c.advocate ? `Adv. ${c.advocate.name}` : 'Unassigned'}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                    <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
                       <span>{c.hearings?.length || 0} Hearings · {c.documents?.length || 0} Documents</span>
                       <div className="flex items-center gap-2">
                         <button
@@ -744,12 +760,12 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                             e.stopPropagation();
                             handleDeleteCase(c.id);
                           }}
-                          className="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-950/50 border border-slate-800 hover:border-rose-500/40 text-slate-500 hover:text-rose-400 transition-all cursor-pointer"
+                          className="p-2 rounded-xl neo-btn text-slate-600 hover:text-rose-600 cursor-pointer"
                           title="Delete Case"
                         >
                           <Trash2 size={13} />
                         </button>
-                        <span className="text-indigo-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        <span className="text-[#111317] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                           Manage Case <ArrowRight size={13} />
                         </span>
                       </div>
@@ -980,54 +996,46 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
           {user?.role === 'citizen' && (
             <div className="space-y-4 animate-fadeIn">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Sparkles className="text-indigo-400" /> My Legal Claim Assessments ({myAssessments?.length || 0})
+                <h2 className="text-lg font-black text-[#111317] flex items-center gap-2">
+                  <Sparkles className="text-[#111317]" size={18} /> My Legal Claim Assessments ({myAssessments?.length || 0})
                 </h2>
                 <Link
                   to="/assessment"
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                  className="neo-btn-black px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1"
                 >
                   <Plus size={14} /> New Assessment
                 </Link>
               </div>
 
               {myAssessments && myAssessments.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {myAssessments.map((item) => (
                     <div
                       key={item.id}
-                      className="p-5 bg-slate-900/60 border border-slate-800 rounded-3xl space-y-4 flex flex-col justify-between"
+                      className="p-6 neo-card space-y-4 flex flex-col justify-between"
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <div className="flex justify-between items-start">
-                          <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                          <span className="neo-inset-sm px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-700">
                             {item.category} Claim
                           </span>
-                          <span
-                            className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                              item.status === 'strong'
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25'
-                                : item.status === 'moderate'
-                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/25'
-                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/25'
-                            }`}
-                          >
+                          <span className="bg-[#111317] text-white px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm">
                             {item.status} Standing (Score: {item.score})
                           </span>
                         </div>
 
-                        <h3 className="font-bold text-white text-base">{item.title}</h3>
-                        <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{item.summary}</p>
+                        <h3 className="font-bold text-[#111317] text-base">{item.title}</h3>
+                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">{item.summary}</p>
                         
                         {item.actionRecommendation && (
-                          <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 text-[11px] text-indigo-300">
-                            <strong>Recommended:</strong> {item.actionRecommendation}
+                          <div className="p-3.5 neo-inset rounded-xl text-[11px] text-slate-800 leading-relaxed">
+                            <strong className="text-[#111317]">Recommended:</strong> {item.actionRecommendation}
                           </div>
                         )}
                       </div>
 
-                      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                        <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                      <div className="pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
                           <Clock size={11} /> {new Date(item.createdAt).toLocaleDateString()}
                         </span>
                         <div className="flex items-center gap-2">
@@ -1038,19 +1046,19 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                               setNewCaseDesc(`${item.summary}\n\nRecommended Action:\n${item.actionRecommendation || ''}`);
                               setShowNewCaseModal(true);
                             }}
-                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-md"
+                            className="neo-btn-black px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
                           >
                             <FolderOpen size={13} /> File Case
                           </button>
                           <Link
                             to="/assessment"
-                            className="px-3 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all"
+                            className="neo-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-800 transition-all"
                           >
                             Retake
                           </Link>
                           <button
                             onClick={() => handleDeleteAssessment(item.id)}
-                            className="p-1.5 bg-slate-950 hover:bg-rose-600/20 border border-slate-800 hover:border-rose-500/40 text-slate-400 hover:text-rose-400 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                            className="p-2 neo-btn rounded-xl text-slate-500 hover:text-rose-600 transition-all flex items-center justify-center cursor-pointer"
                             title="Delete Assessment"
                           >
                             <Trash2 size={13} />
@@ -1061,14 +1069,14 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                   ))}
                 </div>
               ) : (
-                <div className="p-6 bg-slate-900/20 border border-slate-800/60 rounded-3xl text-center space-y-3">
-                  <HelpCircle className="mx-auto text-indigo-400/60" size={32} />
-                  <p className="text-xs text-slate-400 max-w-md mx-auto">
+                <div className="p-8 neo-card text-center space-y-3">
+                  <HelpCircle className="mx-auto text-slate-400" size={32} />
+                  <p className="text-xs text-slate-600 max-w-md mx-auto font-medium">
                     Evaluate your legal standing for disputes like Consumer complaints, Tenancy issues, Property or Family disputes.
                   </p>
                   <Link
                     to="/assessment"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-md"
+                    className="inline-flex items-center gap-2 neo-btn-black px-5 py-2.5 rounded-xl text-xs font-bold"
                   >
                     <Sparkles size={14} /> Start Guided Assessment
                   </Link>

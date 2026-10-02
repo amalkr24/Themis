@@ -141,26 +141,26 @@ export default function Documents() {
       {/* Dynamic Header based on Role */}
       {!previewDoc && (
         <div className="space-y-3 mb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full neo-inset-sm text-slate-800 text-xs font-bold">
             {isAdvocate ? (
               <>
-                <Briefcase size={13} />
+                <Briefcase size={13} className="text-[#111317]" />
                 Advocate Client Document Management & Drafting
               </>
             ) : (
               <>
-                <Sparkles size={13} />
+                <Sparkles size={13} className="text-[#111317]" />
                 Citizen Legal Document Automation
               </>
             )}
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white flex items-center justify-center gap-2.5">
-            <FileText className="text-amber-400" size={32} />
+          <h1 className="text-3xl md:text-4xl font-black text-[#111317] flex items-center justify-center gap-2.5">
+            <FileText className="text-[#111317]" size={32} />
             {isAdvocate ? 'Legal Document Management' : 'Document Automation'}
           </h1>
 
-          <p className="text-slate-400 text-xs md:text-sm max-w-xl mx-auto">
+          <p className="text-slate-600 text-xs md:text-sm max-w-xl mx-auto font-medium">
             {isAdvocate
               ? 'Draft and file formal court proformas, Consumer complaints, and RTI applications directly for your represented clients and attach them to their active cases.'
               : 'Generate official RTI applications, Consumer Forum notices, and complaint drafts with interactive proforma preview & PDF download.'}
@@ -170,14 +170,14 @@ export default function Documents() {
 
       {/* ADVOCATE ONLY: Client & Case Selection Card */}
       {isAdvocate && !previewDoc && (
-        <div className="bg-gradient-to-r from-indigo-950/40 via-slate-900/60 to-purple-950/40 border border-indigo-500/30 p-6 rounded-3xl mb-8 shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
-            <div className="flex items-center gap-2 text-indigo-300 text-xs font-bold uppercase tracking-wider">
-              <UserCheck size={16} className="text-indigo-400" />
+        <div className="neo-card p-6 mb-8 space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-3">
+            <div className="flex items-center gap-2 text-[#111317] text-xs font-bold uppercase tracking-wider">
+              <UserCheck size={16} className="text-[#111317]" />
               1. Select Represented Client
             </div>
             {activeClientObj && (
-              <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold flex items-center gap-1">
+              <span className="px-3 py-1 rounded-lg bg-[#111317] text-white text-[10px] font-bold flex items-center gap-1">
                 <Check size={12} /> Representation Linked
               </span>
             )}
@@ -185,13 +185,13 @@ export default function Documents() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                 Connected Client & Case
               </label>
               <select
                 value={selectedClientId}
                 onChange={(e) => handleClientChange(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 neo-inset rounded-xl text-slate-800 text-xs focus:outline-none"
               >
                 <option value="">-- Independent / Direct Counsel Draft (No linked case) --</option>
                 {connectedClients?.map((conn) => (
@@ -204,19 +204,19 @@ export default function Documents() {
 
             {/* Display active client representation details */}
             {activeClientObj ? (
-              <div className="p-3 bg-slate-950/70 border border-slate-800/90 rounded-2xl text-xs space-y-1">
+              <div className="p-3.5 neo-inset-sm rounded-xl text-xs space-y-1">
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                   Client & Case Profile
                 </span>
-                <p className="font-bold text-slate-200">{activeClientObj.citizen?.name} ({activeClientObj.citizen?.email})</p>
+                <p className="font-bold text-[#111317]">{activeClientObj.citizen?.name} ({activeClientObj.citizen?.email})</p>
                 {activeClientObj.case && (
-                  <p className="text-[11px] text-indigo-300 flex items-center gap-1">
+                  <p className="text-[11px] text-slate-700 flex items-center gap-1 font-semibold">
                     <FolderOpen size={12} /> Case: <strong>{activeClientObj.case.title}</strong>
                   </p>
                 )}
               </div>
             ) : (
-              <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-2xl text-xs text-slate-500">
+              <div className="p-3.5 neo-inset-sm rounded-xl text-xs text-slate-500">
                 Select a connected client from your accepted roster to auto-fill their case facts and save the draft directly into their case file.
               </div>
             )}
@@ -352,18 +352,18 @@ export default function Documents() {
               {templates?.map((tpl) => (
                 <div
                   key={tpl.id}
-                  className="glow-card gold-glow p-6 rounded-3xl flex flex-col justify-between"
+                  className="neo-card p-6 flex flex-col justify-between"
                 >
                   <div className="space-y-3">
-                    <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span className="inline-block px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider neo-inset-sm text-slate-700">
                       {tpl.category} proforma
                     </span>
-                    <h3 className="text-lg font-bold text-white">{tpl.title}</h3>
-                    <p className="text-slate-400 text-xs leading-relaxed">{tpl.description}</p>
+                    <h3 className="text-lg font-black text-[#111317]">{tpl.title}</h3>
+                    <p className="text-slate-600 text-xs leading-relaxed font-medium">{tpl.description}</p>
                   </div>
                   <button
                     onClick={() => handleSelectTemplate(tpl)}
-                    className="mt-6 w-full py-2.5 bg-slate-950/80 hover:bg-amber-500 hover:text-slate-950 border border-slate-800 hover:border-transparent text-slate-300 font-semibold rounded-xl text-xs transition-all"
+                    className="mt-6 w-full py-3 neo-btn-black rounded-xl text-xs font-bold transition-all"
                   >
                     {isAdvocate ? 'Draft Proforma for Client' : 'Select Template'}
                   </button>
@@ -375,21 +375,21 @@ export default function Documents() {
           {/* User's History of Generated Documents */}
           {userDocs && userDocs.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                 {isAdvocate ? `Client Documents Drafted by You (${userDocs.length})` : `Your Generated Documents (${userDocs.length})`}
               </h3>
               <div className="grid grid-cols-1 gap-3">
                 {userDocs.map((doc) => (
                   <div
                     key={doc.id}
-                    className="flex justify-between items-center bg-slate-900/30 border border-slate-800/80 hover:border-slate-800 p-4 rounded-2xl"
+                    className="flex justify-between items-center neo-card-sm p-4"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20">
-                        <FileText size={17} />
+                      <div className="w-10 h-10 rounded-xl neo-inset-sm flex items-center justify-center text-[#111317]">
+                        <FileText size={18} />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-white">{doc.template?.title}</h4>
+                        <h4 className="text-xs font-bold text-[#111317]">{doc.template?.title}</h4>
                         <span className="text-[10px] text-slate-500">
                           Drafted on {new Date(doc.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </span>
@@ -403,7 +403,7 @@ export default function Documents() {
                           filledData: doc.filledData as any,
                           date: doc.createdAt as any,
                         })}
-                        className="px-3.5 py-1.5 bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/30 text-indigo-300 hover:text-white rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 neo-btn-black rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                       >
                         <Eye size={12} /> Preview Proforma
                       </button>
@@ -411,7 +411,7 @@ export default function Documents() {
                         href={`http://localhost:4000${doc.filePath}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3.5 py-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 neo-btn rounded-xl text-slate-800 hover:text-black text-xs font-bold transition-all flex items-center gap-1.5"
                       >
                         <Download size={12} /> Raw .TXT
                       </a>

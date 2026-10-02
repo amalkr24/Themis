@@ -218,4 +218,59 @@ export const consultationsRouter = router({
       limit: 20,
     });
   }),
+
+  // 6. WebRTC Signaling: Send Offer, Answer or ICE Candidate
+  sendSignal: protectedProcedure
+    .input(
+      z.object({
+        roomId: z.string(),
+        type: z.string(),
+        payload: z.any(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { roomId, type, payload } = input;
+      if (!signalingRooms.has(roomId)) {
+        signalingRooms.set(roomId, []);
+      }
+      const room = signalingRooms.get(roomId)!;
+      const now = Date.now();
+      // Prune signals older than 2 minutes
+      const active = room.filter((m) => now - m.timestamp < 120000);
+      const msg: SignalingMessage = {
+        id: `${now}-${Math.random().toString(36).substring(2, 7)}`,
+        senderId: ctx.user.id,
+        type,
+        payload,
+        timestamp: now,
+      };
+      active.push(msg);
+      signalingRooms.set(roomId, active);
+      return { success: true, signalId: msg.id };
+    }),
+
+  // 7. WebRTC Signaling: Get Incoming Signals from Peer
+  getSignals: protectedProcedure
+    .input(
+      z.object({
+        roomId: z.string(),
+        since: z.number().optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const room = signalingRooms.get(input.roomId) || [];
+      const since = input.since || 0;
+      return room.filter((m) => m.senderId !== ctx.user.id && m.timestamp > since);
+    }),
 });
+
+interface SignalingMessage {
+  id: string;
+  senderId: string;
+  type: string;
+  payload: any;
+  timestamp: number;
+}
+
+const signalingRooms = new Map<string, SignalingMessage[]>();
+

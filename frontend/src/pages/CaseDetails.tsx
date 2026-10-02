@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { trpc } from '../utils/trpc.js';
 import { useAuth } from '../hooks/useAuth.js';
-import { Calendar, FileText, ArrowLeft, Plus, Download, Loader2, Video, Clock, Trash2 } from 'lucide-react';
+import { Calendar, FileText, ArrowLeft, Plus, Download, Loader2, Video, Clock, Trash2, Scale } from 'lucide-react';
 
 export default function CaseDetails() {
   const { id } = useParams<{ id: string }>();
@@ -234,41 +234,41 @@ export default function CaseDetails() {
       </div>
 
       {/* Main Details Panel */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 md:p-8 backdrop-blur-xl space-y-6">
+      <div className="neo-card p-6 md:p-8 space-y-6">
         <div className="flex flex-wrap justify-between items-start gap-4">
           <div>
-            <span className="inline-block px-2.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-slate-950 text-indigo-400 border border-indigo-500/20 mb-2">
+            <span className="inline-block px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider neo-inset-sm text-slate-700 mb-2">
               Category: {caseItem.category}
             </span>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-snug">{caseItem.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#111317] leading-snug">{caseItem.title}</h1>
           </div>
           <span
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider ${
               caseItem.status === 'active'
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25'
+                ? 'bg-[#111317] text-white shadow-sm'
                 : caseItem.status === 'closed'
-                ? 'bg-slate-800 text-slate-500 border border-slate-700/30'
-                : 'bg-amber-500/10 text-amber-400 border border-amber-500/25'
+                ? 'neo-card-sm text-slate-500'
+                : 'neo-inset-sm text-slate-800'
             }`}
           >
             {caseItem.status}
           </span>
         </div>
 
-        <p className="text-slate-300 text-sm leading-relaxed border-t border-slate-800/80 pt-5">
+        <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-200 pt-5 font-medium">
           {caseItem.description}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-800/80 pt-5 text-xs text-slate-500">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 pt-5 text-xs text-slate-500 font-medium">
           <div>
-            Client: <strong className="text-slate-300 ml-1">{caseItem.citizen?.name}</strong>
-            <span className="block font-light text-slate-500">({caseItem.citizen?.email})</span>
+            Client: <strong className="text-[#111317] ml-1">{caseItem.citizen?.name}</strong>
+            <span className="block font-normal text-slate-500">({caseItem.citizen?.email})</span>
           </div>
 
           <div>
             {auth.user?.role === 'admin' ? (
               <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                   Assign / Reassign Advocate:
                 </span>
                 <select
@@ -283,7 +283,7 @@ export default function CaseDetails() {
                       alert(err.message || 'Error assigning advocate');
                     }
                   }}
-                  className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500 text-xs font-semibold"
+                  className="w-full px-3 py-1.5 neo-inset rounded-xl text-slate-800 text-xs font-bold focus:outline-none"
                 >
                   <option value="">-- Select Approved Advocate --</option>
                   {approvedAdvocates?.map((a) => (
@@ -295,12 +295,126 @@ export default function CaseDetails() {
               </div>
             ) : (
               <div>
-                Advocate Representation: <strong className="text-slate-300 ml-1">{caseItem.advocate?.name || 'Self-Managed'}</strong>
-                <span className="block font-light text-slate-500">({caseItem.advocate?.email || 'N/A'})</span>
+                Advocate Representation: <strong className="text-[#111317] ml-1">{caseItem.advocate?.name || 'Self-Managed'}</strong>
+                <span className="block font-normal text-slate-500">({caseItem.advocate?.email || 'N/A'})</span>
               </div>
             )}
           </div>
         </div>
+      </div>
+
+      {/* ──────────────── VISUAL CASE TIMELINE STEPPER (SRS FR-6.3) ──────────────── */}
+      <div className="neo-card p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Scale className="text-[#111317]" size={18} />
+            <h3 className="text-sm font-bold text-[#111317] uppercase tracking-wider">
+              Procedural Case Lifecycle & Milestone Timeline
+            </h3>
+          </div>
+          <span className="text-xs text-slate-500 font-medium">
+            Filing Date:{' '}
+            <strong className="text-[#111317]">
+              {new Date(caseItem.createdAt).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </strong>
+          </span>
+        </div>
+
+        {/* Milestone Steps Stepper */}
+        {(() => {
+          const milestones = [
+            {
+              step: 1,
+              title: 'Case Registration',
+              desc: 'Pleading formally filed & registered in docket',
+              isCompleted: true,
+              date: new Date(caseItem.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+            },
+            {
+              step: 2,
+              title: 'Counsel Representation',
+              desc: caseItem.advocate ? `Adv. ${caseItem.advocate.name} appointed` : 'Self-represented or pending counsel',
+              isCompleted: !!caseItem.advocateId,
+              date: caseItem.advocate ? 'Appointed' : 'Pending',
+            },
+            {
+              step: 3,
+              title: 'Evidence & Documents',
+              desc: `${caseItem.documents?.length || 0} legal documents & proofs lodged`,
+              isCompleted: (caseItem.documents?.length || 0) > 0,
+              date: (caseItem.documents?.length || 0) > 0 ? `${caseItem.documents.length} Files` : 'Awaiting Proofs',
+            },
+            {
+              step: 4,
+              title: 'Hearings & Trial',
+              desc: `${caseItem.hearings?.length || 0} court hearings scheduled/held`,
+              isCompleted: (caseItem.hearings?.length || 0) > 0,
+              date: (caseItem.hearings?.length || 0) > 0 ? `${caseItem.hearings.length} Scheduled` : 'Not Listed Yet',
+            },
+            {
+              step: 5,
+              title: 'Final Disposal / Decree',
+              desc: caseItem.status === 'closed' ? 'Case disposed / settled' : 'Adjudication in progress',
+              isCompleted: caseItem.status === 'closed',
+              date: caseItem.status === 'closed' ? 'Closed' : 'Active Trial',
+            },
+          ];
+
+          const completedCount = milestones.filter((m) => m.isCompleted).length;
+          const progressPercent = Math.round((completedCount / milestones.length) * 100);
+
+          return (
+            <div className="space-y-6">
+              {/* Progress percentage bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-semibold">
+                  <span className="text-slate-400">Overall Case Progress</span>
+                  <span className="text-indigo-400">{progressPercent}% Completed ({completedCount} of 5 Milestones)</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
+                  <div
+                    className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Horizontal / Grid milestones */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 pt-2">
+                {milestones.map((m) => (
+                  <div
+                    key={m.step}
+                    className={`relative p-3.5 rounded-2xl border transition-all ${
+                      m.isCompleted
+                        ? 'bg-slate-950/70 border-indigo-500/30 shadow-md shadow-indigo-500/5'
+                        : 'bg-slate-950/30 border-slate-800/60 opacity-65'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
+                          m.isCompleted
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-slate-800 text-slate-400 border border-slate-700'
+                        }`}
+                      >
+                        {m.isCompleted ? '✓' : m.step}
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-500 font-semibold">{m.date}</span>
+                    </div>
+
+                    <h4 className="text-xs font-bold text-white leading-tight mb-1">{m.title}</h4>
+                    <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">{m.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Hearing and Document Columns */}

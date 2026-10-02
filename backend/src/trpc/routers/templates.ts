@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Standard dynamic template seeder helper
-const ensureDefaultTemplates = async () => {
+export const ensureDefaultTemplates = async () => {
   const templates = await db.select().from(documentTemplates);
   if (templates.length === 0) {
     const defaultList = [
@@ -102,17 +102,101 @@ ________________________
           { name: 'noticeDate', label: 'Legal Notice Send Date', type: 'text', placeholder: 'YYYY-MM-DD' },
           { name: 'compensationAmount', label: 'Compensation Requested (in Rs.)', type: 'text', placeholder: 'e.g. 10000' }
         ]
+      },
+      {
+        title: 'Tenant Eviction & Termination Notice',
+        description: 'Statutory notice under Section 106 of the Transfer of Property Act to terminate lease and demand vacant possession.',
+        category: 'agreement',
+        contentTemplate: `LEGAL NOTICE OF LEASE TERMINATION & VACATION OF PREMISES
+(UNDER SECTION 106 OF THE TRANSFER OF PROPERTY ACT, 1882)
+
+To,
+{{tenantName}}
+Resident of: {{premisesAddress}}
+
+Subject: Notice to quit and vacate the scheduled premises within {{noticeDays}} days.
+
+Sir/Madam,
+Under instructions from and on behalf of my client/landlord {{landlordName}}, residing at {{landlordAddress}}, I hereby serve you with this formal legal notice:
+
+1. That you entered into a tenancy/lease arrangement with my client on {{leaseStartDate}} in respect of residential/commercial premises located at: {{premisesAddress}}.
+2. That the agreed monthly rental consideration was fixed at Rs. {{monthlyRent}}/- payable on or before the 5th day of every calendar month.
+3. Grounds for Termination:
+   {{evictionGrounds}}
+4. That you are in default/unauthorized occupation, and your tenancy stands formally terminated upon the expiry of {{noticeDays}} days from receipt of this notice.
+5. You are hereby called upon to peacefully handover vacant possession of the premises to my client on or before {{vacateDeadlineDate}}, failing which my client shall initiate formal eviction proceedings in the competent civil court at your sole risk and costs.
+
+Issued by:
+________________________
+{{landlordName}} / Counsel
+Dated: {{noticeDate}}
+Place: {{place}}`,
+        fieldsSchema: [
+          { name: 'tenantName', label: 'Tenant Full Name', type: 'text', placeholder: 'Full Name of the Tenant' },
+          { name: 'premisesAddress', label: 'Rented Premises Address', type: 'text', placeholder: 'Complete address of the rented property' },
+          { name: 'landlordName', label: 'Landlord Full Name', type: 'text', placeholder: 'Landlord Legal Name' },
+          { name: 'landlordAddress', label: 'Landlord Residential Address', type: 'text', placeholder: 'Landlord Contact Address' },
+          { name: 'leaseStartDate', label: 'Lease Commencement Date', type: 'text', placeholder: 'YYYY-MM-DD' },
+          { name: 'monthlyRent', label: 'Monthly Rent (in Rs.)', type: 'text', placeholder: 'e.g. 18000' },
+          { name: 'evictionGrounds', label: 'Grounds for Eviction / Lease Violation', type: 'textarea', placeholder: 'e.g. Non-payment of rent for 3 consecutive months and breach of residential clause.' },
+          { name: 'noticeDays', label: 'Notice Period (Days)', type: 'text', placeholder: 'e.g. 15 or 30' },
+          { name: 'vacateDeadlineDate', label: 'Deadline Date to Vacate', type: 'text', placeholder: 'YYYY-MM-DD' },
+          { name: 'noticeDate', label: 'Date of Notice', type: 'text', placeholder: 'YYYY-MM-DD' },
+          { name: 'place', label: 'Place', type: 'text', placeholder: 'City / Location' }
+        ]
+      },
+      {
+        title: 'Sworn Court Affidavit & Verification',
+        description: 'Standard sworn affidavit for submission before judicial magistrates, civil courts, or public authorities.',
+        category: 'affidavit',
+        contentTemplate: `BEFORE THE HON'BLE COURT / AUTHORITY AT {{jurisdictionCity}}
+
+AFFIDAVIT
+
+I, {{deponentName}}, son/daughter/wife of {{deponentFatherName}}, aged about {{deponentAge}} years, residing at {{deponentAddress}}, do hereby solemnly affirm and state on oath as follows:
+
+1. That I am the citizen/deponent in the above-captioned matter and am fully conversant with the facts stated hereunder.
+2. Facts Solemnly Affirmed:
+   {{affidavitFacts}}
+3. That I have not suppressed any material facts or made any misleading statements before this Hon'ble Authority.
+4. That the annexures attached herewith are true certified copies of their respective originals.
+
+VERIFICATION:
+Verified at {{jurisdictionCity}} on this {{dateDay}} day of {{dateMonthYear}}, that the contents of paragraphs 1 to 4 of this affidavit are true and correct to the best of my personal knowledge and belief, and nothing material has been concealed therefrom.
+
+DEPONENT:
+________________________
+({{deponentName}})
+
+Sworn and signed before me:
+Oath Commissioner / Notary Public`,
+        fieldsSchema: [
+          { name: 'jurisdictionCity', label: 'Court / Location City', type: 'text', placeholder: 'e.g. Ernakulam, Kochi' },
+          { name: 'deponentName', label: 'Deponent (Your) Full Name', type: 'text', placeholder: 'Your Name' },
+          { name: 'deponentFatherName', label: 'Father / Spouse Name', type: 'text', placeholder: 'e.g. Late Mr. K. Sharma' },
+          { name: 'deponentAge', label: 'Deponent Age', type: 'text', placeholder: 'e.g. 34' },
+          { name: 'deponentAddress', label: 'Deponent Full Address', type: 'text', placeholder: 'Complete residential address' },
+          { name: 'affidavitFacts', label: 'Affidavit Facts & Statements', type: 'textarea', placeholder: 'State chronological facts affirmed under oath.' },
+          { name: 'dateDay', label: 'Day of Execution', type: 'text', placeholder: 'e.g. 15th' },
+          { name: 'dateMonthYear', label: 'Month & Year', type: 'text', placeholder: 'e.g. October, 2026' }
+        ]
       }
     ];
 
     for (const t of defaultList) {
-      await db.insert(documentTemplates).values({
-        title: t.title,
-        description: t.description,
-        category: t.category,
-        contentTemplate: t.contentTemplate,
-        fieldsSchema: t.fieldsSchema,
+      // Check if template exists by title to prevent duplicate seeding
+      const existing = await db.query.documentTemplates.findFirst({
+        where: eq(documentTemplates.title, t.title),
       });
+      if (!existing) {
+        await db.insert(documentTemplates).values({
+          title: t.title,
+          description: t.description,
+          category: t.category,
+          contentTemplate: t.contentTemplate,
+          fieldsSchema: t.fieldsSchema,
+        });
+      }
     }
   }
 };
@@ -250,4 +334,3 @@ export const templatesRouter = router({
     });
   }),
 });
-export type { ensureDefaultTemplates };

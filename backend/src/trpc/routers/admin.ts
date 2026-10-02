@@ -69,6 +69,7 @@ export const adminRouter = router({
             barCouncilNumber: true,
             experienceYears: true,
             practiceAreas: true,
+            certificateUrl: true,
           },
         },
       },

@@ -9,6 +9,7 @@ import { notificationsRouter } from './notifications.js';
 import { consultationsRouter } from './consultations.js';
 import { messagesRouter } from './messages.js';
 import { assessmentsRouter } from './assessments.js';
+import { lawsRouter } from './laws.js';
 
 export const appRouter = router({
   auth: authRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
   consultations: consultationsRouter,
   messages: messagesRouter,
   assessments: assessmentsRouter,
+  laws: lawsRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { trpc } from '../utils/trpc.js';
 import { useAuth } from '../hooks/useAuth.js';
@@ -28,9 +28,12 @@ export default function ConsultationRoom() {
   const { user } = useAuth();
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [remoteHasVideo, setRemoteHasVideo] = useState(false);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -39,6 +42,9 @@ export default function ConsultationRoom() {
   const [sessionNotes, setSessionNotes] = useState('');
   const [showEndModal, setShowEndModal] = useState(false);
 
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const processedSignals = useRef<Set<string>>(new Set());
+
   // Fetch consultation room data
   const { data: session, isLoading } = trpc.consultations.getRoom.useQuery(
     { id: id || '' },
@@ -46,10 +52,46 @@ export default function ConsultationRoom() {
   );
 
   const completeMutation = trpc.consultations.completeSession.useMutation();
+  const sendSignalMutation = trpc.consultations.sendSignal.useMutation();
 
-  // Initialize camera & microphone
+  // Poll for peer WebRTC signals
+  const { data: incomingSignals } = trpc.consultations.getSignals.useQuery(
+    { roomId: session?.meetingRoomId || '' },
+    { enabled: !!session?.meetingRoomId, refetchInterval: 1200 }
+  );
+
+  // Initialize camera & microphone and RTCPeerConnection
   useEffect(() => {
     let localMediaStream: MediaStream | null = null;
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+    });
+    pcRef.current = pc;
+
+    // Handle remote track
+    pc.ontrack = (event) => {
+      if (event.streams && event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+        setRemoteHasVideo(true);
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = event.streams[0];
+        }
+      }
+    };
+
+    // Handle ICE candidates
+    pc.onicecandidate = (event) => {
+      if (event.candidate && session?.meetingRoomId) {
+        sendSignalMutation.mutate({
+          roomId: session.meetingRoomId,
+          type: 'ice-candidate',
+          payload: event.candidate,
+        });
+      }
+    };
 
     async function initMedia() {
       try {
@@ -61,26 +103,89 @@ export default function ConsultationRoom() {
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = localMediaStream;
         }
+
+        // Add tracks to peer connection
+        localMediaStream.getTracks().forEach((track) => {
+          pc.addTrack(track, localMediaStream!);
+        });
+
+        // If user is advocate or room initiator, create offer
+        if (user?.role === 'advocate' && session?.meetingRoomId) {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          await sendSignalMutation.mutateAsync({
+            roomId: session.meetingRoomId,
+            type: 'offer',
+            payload: offer,
+          });
+        }
       } catch (err) {
         console.warn('Unable to acquire camera/mic stream:', err);
       }
     }
 
-    initMedia();
+    if (session?.meetingRoomId) {
+      initMedia();
+    }
 
     return () => {
       if (localMediaStream) {
         localMediaStream.getTracks().forEach((track) => track.stop());
       }
+      pc.close();
+      pcRef.current = null;
     };
-  }, []);
+  }, [session?.meetingRoomId]);
 
-  // Update local video element when stream or video status changes
+  // Handle incoming WebRTC signals
+  useEffect(() => {
+    if (!incomingSignals || !pcRef.current || !session?.meetingRoomId) return;
+
+    const signals = incomingSignals;
+    async function handleSignals() {
+      const pc = pcRef.current;
+      if (!pc) return;
+
+      for (const sig of signals) {
+        if (processedSignals.current.has(sig.id)) continue;
+        processedSignals.current.add(sig.id);
+
+        try {
+          if (sig.type === 'offer') {
+            await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            await sendSignalMutation.mutateAsync({
+              roomId: session!.meetingRoomId,
+              type: 'answer',
+              payload: answer,
+            });
+          } else if (sig.type === 'answer') {
+            await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+          } else if (sig.type === 'ice-candidate' && sig.payload) {
+            await pc.addIceCandidate(new RTCIceCandidate(sig.payload));
+          }
+        } catch (e) {
+          console.warn('Error handling WebRTC signal:', e);
+        }
+      }
+    }
+
+    handleSignals();
+  }, [incomingSignals, session?.meetingRoomId]);
+
+  // Update local and remote video elements when streams change
   useEffect(() => {
     if (localVideoRef.current && stream) {
       localVideoRef.current.srcObject = stream;
     }
   }, [stream, isVideoOff]);
+
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   // Handle Mute Toggle
   const toggleMute = () => {
@@ -255,18 +360,27 @@ export default function ConsultationRoom() {
               /* Split Multi-Party Video Feeds */
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 items-center">
                 {/* Peer Feed */}
-                <div className="relative w-full h-[230px] md:h-[380px] rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800/80 overflow-hidden flex items-center justify-center shadow-inner group">
-                  <div className="text-center space-y-3 p-6">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto shadow-xl ring-4 ring-indigo-500/20">
-                      {otherPartyName.charAt(0)}
+                <div className="relative w-full h-[230px] md:h-[380px] rounded-2xl bg-slate-900 border border-slate-800/80 overflow-hidden flex items-center justify-center shadow-inner group">
+                  {remoteHasVideo ? (
+                    <video
+                      ref={remoteVideoRef}
+                      autoPlay
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-center space-y-3 p-6">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto shadow-xl ring-4 ring-indigo-500/20">
+                        {otherPartyName.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-sm">{otherPartyName}</h3>
+                        <p className="text-[11px] text-emerald-400 font-medium flex items-center justify-center gap-1 mt-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" /> WebRTC Signaling Active · Peer Room Ready
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-white text-sm">{otherPartyName}</h3>
-                      <p className="text-[11px] text-emerald-400 font-medium flex items-center justify-center gap-1 mt-0.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" /> Connected in Consultation
-                      </p>
-                    </div>
-                  </div>
+                  )}
                   <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-slate-900/80 backdrop-blur-md border border-slate-800 text-white text-[10px] font-semibold flex items-center gap-1.5">
                     <Users size={12} className="text-indigo-400" /> {otherPartyName}
                   </div>

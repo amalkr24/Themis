@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, RefreshCw, Landmark, HelpCircle, FileText, BookmarkCheck, Scale } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, RefreshCw, Landmark, HelpCircle, FileText, BookmarkCheck, Scale, Users } from 'lucide-react';
 import { trpc } from '../utils/trpc.js';
 import { useAuth } from '../hooks/useAuth.js';
 
@@ -436,11 +436,11 @@ export default function Assessment() {
 
       {/* Header */}
       <div className="space-y-4 mb-10 text-center">
-        <h1 className="text-3xl font-extrabold text-white flex items-center justify-center gap-2">
-          <HelpCircle className="text-indigo-400" />
+        <h1 className="text-3xl md:text-4xl font-black text-[#111317] flex items-center justify-center gap-2.5">
+          <HelpCircle className="text-[#111317]" size={32} />
           Guided Legal Assessment
         </h1>
-        <p className="text-slate-400 text-sm max-w-lg mx-auto">
+        <p className="text-slate-600 text-sm max-w-lg mx-auto font-medium">
           An interactive questionnaire to assess the strength of your legal standing. Answer a few questions to understand your options.
         </p>
       </div>
@@ -452,16 +452,16 @@ export default function Assessment() {
             <button
               key={key}
               onClick={() => startAssessment(key)}
-              className="glow-card p-8 rounded-3xl text-left flex flex-col justify-between"
+              className="neo-card p-8 rounded-3xl text-left flex flex-col justify-between group cursor-pointer"
             >
               <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                  <Landmark size={20} />
+                <div className="w-12 h-12 rounded-2xl neo-inset-sm flex items-center justify-center text-[#111317]">
+                  <Landmark size={22} />
                 </div>
-                <h3 className="text-lg font-bold text-white">{flow.title}</h3>
-                <p className="text-slate-400 text-xs leading-relaxed">{flow.description}</p>
+                <h3 className="text-lg font-black text-[#111317] group-hover:underline">{flow.title}</h3>
+                <p className="text-slate-600 text-xs leading-relaxed font-medium">{flow.description}</p>
               </div>
-              <div className="mt-8 flex items-center gap-2 text-indigo-400 font-semibold text-xs">
+              <div className="mt-8 flex items-center gap-2 text-[#111317] font-bold text-xs group-hover:translate-x-1 transition-transform">
                 Start Assessment <ArrowRight size={14} />
               </div>
             </button>
@@ -469,59 +469,105 @@ export default function Assessment() {
         </div>
       ) : isFinished && recommendation ? (
         // Results Screen
-        <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-3xl backdrop-blur-xl space-y-6 shadow-xl animate-fadeIn">
+        <div className="neo-card p-8 space-y-6 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              {recommendation.status === 'strong' ? (
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+              <div className="p-2.5 rounded-xl neo-inset-sm text-[#111317]">
+                {recommendation.status === 'strong' ? (
                   <CheckCircle2 size={28} />
-                </div>
-              ) : (
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                ) : (
                   <AlertTriangle size={28} />
-                </div>
-              )}
+                )}
+              </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">ASSESSMENT RESULT</span>
-                <h2 className="text-2xl font-bold text-white">{recommendation.title}</h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">ASSESSMENT RESULT</span>
+                <h2 className="text-2xl font-black text-[#111317]">{recommendation.title}</h2>
               </div>
             </div>
 
             {user && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 font-medium self-start sm:self-center">
-                <BookmarkCheck size={14} className="text-indigo-400" />
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full neo-inset-sm text-xs text-slate-700 font-bold self-start sm:self-center">
+                <BookmarkCheck size={14} className="text-[#111317]" />
                 {savedSuccess ? 'Saved to Workspace' : 'Saving to Workspace...'}
               </div>
             )}
           </div>
 
-          <p className="text-slate-300 text-sm leading-relaxed border-t border-slate-800/80 pt-4">
+          <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-200 pt-4 font-medium">
             {recommendation.text}
           </p>
 
-          <div className="bg-indigo-950/40 border border-indigo-900/30 p-5 rounded-2xl">
-            <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Recommended Next Action</h4>
-            <p className="text-slate-200 text-sm">{recommendation.action}</p>
+          <div className="neo-inset p-5 rounded-2xl space-y-1">
+            <h4 className="text-xs font-bold text-[#111317] uppercase tracking-wider">Recommended Next Action</h4>
+            <p className="text-slate-800 text-sm font-medium">{recommendation.action}</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-800/80">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-200">
             <Link
               to={`/dashboard?newCase=true&cat=${encodeURIComponent(selectedFlow)}&title=${encodeURIComponent(recommendation.title)}&desc=${encodeURIComponent(recommendation.text + ' ' + recommendation.action)}`}
-              className="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+              className="px-4 py-3 neo-btn-black rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
             >
               <Scale size={16} /> File Case Dossier
             </Link>
 
+            <button
+              onClick={() => {
+                const printWindow = window.open('', '_blank', 'width=800,height=900');
+                if (!printWindow) {
+                  alert('Please allow popups to print/download assessment report.');
+                  return;
+                }
+                printWindow.document.write(`
+                  <html>
+                    <head>
+                      <title>THEMIS - Legal Assessment Report</title>
+                      <style>
+                        body { font-family: 'Times New Roman', serif; padding: 40px; color: #111; line-height: 1.6; }
+                        h1 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; font-size: 20pt; }
+                        .badge { display: inline-block; padding: 4px 10px; background: #eee; border-radius: 4px; font-weight: bold; }
+                        .section { margin-top: 25px; border-left: 3px solid #4f46e5; padding-left: 15px; }
+                        .date { text-align: right; font-size: 11pt; color: #555; }
+                      </style>
+                    </head>
+                    <body>
+                      <div class="date">Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                      <h1>THEMIS DIGITAL LEGAL AID ASSESSMENT REPORT</h1>
+                      <p><strong>Category:</strong> ${activeFlow?.title || 'General Legal Dispute'}</p>
+                      <p><strong>Standing Status:</strong> <span class="badge">${recommendation.status.toUpperCase()}</span></p>
+                      <div class="section">
+                        <h3>Assessment Finding:</h3>
+                        <p><strong>${recommendation.title}</strong></p>
+                        <p>${recommendation.text}</p>
+                      </div>
+                      <div class="section">
+                        <h3>Recommended Action:</h3>
+                        <p>${recommendation.action}</p>
+                      </div>
+                      <p style="margin-top: 40px; font-size: 10pt; color: #777;">
+                        Note: This preliminary assessment is automatically generated for digital legal aid triage under Themis Platform. It does not constitute formal legal representation.
+                      </p>
+                    </body>
+                  </html>
+                `);
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => printWindow.print(), 350);
+              }}
+              className="px-4 py-3 neo-btn rounded-xl text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-2"
+            >
+              <FileText size={16} /> Print / PDF Report
+            </button>
+
             <Link
               to="/advocates"
-              className="px-4 py-3 bg-purple-600/80 hover:bg-purple-600 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2"
+              className="px-4 py-3 neo-btn rounded-xl text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-2"
             >
-              <FileText size={16} /> Consult an Advocate
+              <Users size={16} /> Consult Counsel
             </Link>
 
             <button
               onClick={resetAssessment}
-              className="px-4 py-3 bg-slate-950/80 border border-slate-800 hover:text-white text-slate-300 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2"
+              className="px-4 py-3 neo-btn rounded-xl text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-2"
             >
               <RefreshCw size={16} /> Try Another
             </button>
@@ -530,12 +576,12 @@ export default function Assessment() {
       ) : (
         // Question Wizard Screen
         currentQuestion && (
-          <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-3xl backdrop-blur-xl shadow-xl space-y-8 animate-fadeIn">
+          <div className="neo-card p-8 space-y-8 animate-fadeIn">
             {/* Progress / Navigation */}
-            <div className="flex justify-between items-center text-xs text-slate-500 font-medium">
+            <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-1 hover:text-slate-300 transition-colors"
+                className="flex items-center gap-1 hover:text-[#111317] transition-colors"
               >
                 <ArrowLeft size={14} /> Back
               </button>
@@ -544,8 +590,8 @@ export default function Assessment() {
 
             {/* Question Text */}
             <div className="space-y-2">
-              <span className="text-[10px] font-bold tracking-wider text-indigo-400 uppercase">Question</span>
-              <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">
+              <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Question</span>
+              <h2 className="text-xl md:text-2xl font-black text-[#111317] leading-snug">
                 {currentQuestion.text}
               </h2>
             </div>
@@ -556,7 +602,7 @@ export default function Assessment() {
                 <button
                   key={index}
                   onClick={() => handleAnswerSelect(option)}
-                  className="w-full text-left p-5 bg-slate-950/50 hover:bg-indigo-600/10 border border-slate-800 hover:border-indigo-500/40 rounded-2xl text-slate-300 hover:text-white font-medium transition-all"
+                  className="w-full text-left p-5 neo-btn rounded-2xl text-slate-800 hover:text-black font-bold text-sm transition-all"
                 >
                   {option.label}
                 </button>

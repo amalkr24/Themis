@@ -20,6 +20,7 @@ export const advocateProfiles = pgTable('advocate_profiles', {
   practiceAreas: text('practice_areas').notNull(), // Comma-separated or serialized array
   experienceYears: integer('experience_years').notNull(),
   bio: text('bio').notNull(),
+  certificateUrl: varchar('certificate_url', { length: 512 }),
   status: varchar('status', { length: 50 }).notNull().default('pending'), // 'pending' | 'approved' | 'rejected'
   verifiedAt: timestamp('verified_at'),
   verifiedBy: uuid('verified_by').references(() => users.id),
@@ -308,4 +309,46 @@ export const assessmentsRelations = relations(assessments, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+// --- India Code Acts Table (National Statutes & Legislation) ---
+export const acts = pgTable('acts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  actNumber: varchar('act_number', { length: 100 }),
+  actYear: integer('act_year').notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  shortTitle: varchar('short_title', { length: 50 }).notNull(),
+  category: varchar('category', { length: 100 }).notNull(), // 'Criminal Law' | 'Constitutional Law' | 'Civil Law' | 'Consumer Law' | etc.
+  ministry: varchar('ministry', { length: 255 }),
+  indiaCodeUrl: varchar('india_code_url', { length: 512 }),
+  overview: text('overview').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// --- Act Sections Table (Statutory Sections, Plain Language Summaries & Remedies) ---
+export const actSections = pgTable('act_sections', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  actId: uuid('act_id').references(() => acts.id, { onDelete: 'cascade' }).notNull(),
+  sectionNumber: varchar('section_number', { length: 100 }).notNull(),
+  sectionTitle: varchar('section_title', { length: 255 }).notNull(),
+  legalText: text('legal_text').notNull(),
+  plainSummary: text('plain_summary').notNull(),
+  punishmentOrRemedy: text('punishment_or_remedy'),
+  cognizable: varchar('cognizable', { length: 50 }).default('N/A'),
+  bailable: varchar('bailable', { length: 50 }).default('N/A'),
+  forum: varchar('forum', { length: 255 }),
+  keyPrecedent: text('key_precedent'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const actsRelations = relations(acts, ({ many }) => ({
+  sections: many(actSections),
+}));
+
+export const actSectionsRelations = relations(actSections, ({ one }) => ({
+  act: one(acts, {
+    fields: [actSections.actId],
+    references: [acts.id],
+  }),
+}));
+
 

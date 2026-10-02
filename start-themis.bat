@@ -5,8 +5,10 @@ echo           THEMIS DIGITAL LEGAL AID LAUNCHER
 echo ======================================================
 echo.
 
-:: Add Visual Studio NodeJs path to PATH
-set PATH=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VisualStudio\NodeJs;%PATH%
+:: Add Visual Studio NodeJs path to PATH if it exists
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VisualStudio\NodeJs" (
+    set "PATH=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VisualStudio\NodeJs;%PATH%"
+)
 
 :: Verify Node.js is accessible
 node -v >nul 2>&1
