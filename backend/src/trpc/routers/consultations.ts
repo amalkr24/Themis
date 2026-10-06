@@ -2,7 +2,7 @@ import { router, protectedProcedure } from '../trpc.js';
 import { z } from 'zod';
 import { db } from '../../db/client.js';
 import { consultations, advocateProfiles } from '../../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, and, or } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { createNotification } from './notifications.js';
 
@@ -219,29 +219,60 @@ export const consultationsRouter = router({
     });
   }),
 
-  // 6. WebRTC Signaling: Send Offer, Answer or ICE Candidate
+  // 6. Get Current Active Consultation Call for User (for Live Header/Banner notification)
+  getActiveCall: protectedProcedure.query(async ({ ctx }) => {
+    const active = await db.query.consultations.findFirst({
+      where: and(
+        or(
+          eq(consultations.citizenId, ctx.user.id),
+          eq(consultations.advocateId, ctx.user.id)
+        ),
+        eq(consultations.status, 'active')
+      ),
+      with: {
+        citizen: { columns: { id: true, name: true, email: true } },
+        advocate: { columns: { id: true, name: true, email: true } },
+        case: { columns: { id: true, title: true } },
+      },
+      orderBy: (c, { desc }) => [desc(c.createdAt)],
+    });
+    return active || null;
+  }),
+
+  // 7. WebRTC Signaling: Send Offer, Answer or ICE Candidate
   sendSignal: protectedProcedure
     .input(
       z.object({
         roomId: z.string(),
+        peerId: z.string().optional(),
         type: z.string(),
-        payload: z.any(),
+        payload: z.any().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { roomId, type, payload } = input;
+      const { roomId, peerId, type, payload } = input;
       if (!signalingRooms.has(roomId)) {
         signalingRooms.set(roomId, []);
       }
       const room = signalingRooms.get(roomId)!;
       const now = Date.now();
-      // Prune signals older than 2 minutes
-      const active = room.filter((m) => now - m.timestamp < 120000);
+      // Prune signals older than 5 minutes
+      let active = room.filter((m) => now - m.timestamp < 300000);
+      
+      // When a fresh offer is submitted, reset previous room signals to avoid stale SDP/ICE candidate glare
+      if (type === 'offer') {
+        active = [];
+      } else if (type === 'peer-hung-up') {
+        signalingRooms.delete(roomId);
+        return { success: true, signalId: 'hung-up' };
+      }
+
       const msg: SignalingMessage = {
         id: `${now}-${Math.random().toString(36).substring(2, 7)}`,
         senderId: ctx.user.id,
+        peerId: peerId || ctx.user.id,
         type,
-        payload,
+        payload: payload ?? null,
         timestamp: now,
       };
       active.push(msg);
@@ -249,28 +280,42 @@ export const consultationsRouter = router({
       return { success: true, signalId: msg.id };
     }),
 
-  // 7. WebRTC Signaling: Get Incoming Signals from Peer
+  // 8. WebRTC Signaling: Get Incoming Signals from Peer
   getSignals: protectedProcedure
     .input(
       z.object({
         roomId: z.string(),
+        peerId: z.string().optional(),
         since: z.number().optional(),
       })
     )
     .query(async ({ input, ctx }) => {
       const room = signalingRooms.get(input.roomId) || [];
       const since = input.since || 0;
-      return room.filter((m) => m.senderId !== ctx.user.id && m.timestamp > since);
+      return room.filter((m) => {
+        const isFromPeer = input.peerId ? m.peerId !== input.peerId : m.senderId !== ctx.user.id;
+        return isFromPeer && m.timestamp > since;
+      });
+    }),
+
+  // 9. Clear Signals on Session Termination
+  clearRoomSignals: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .mutation(async ({ input }) => {
+      signalingRooms.delete(input.roomId);
+      return { success: true };
     }),
 });
 
 interface SignalingMessage {
   id: string;
   senderId: string;
+  peerId?: string;
   type: string;
   payload: any;
   timestamp: number;
 }
 
 const signalingRooms = new Map<string, SignalingMessage[]>();
+
 

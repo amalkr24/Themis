@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { trpc } from '../utils/trpc.js';
 import { useAuth } from '../hooks/useAuth.js';
-import { UserCheck, Scale, Briefcase, Clock, Search, ArrowRight, Loader2, Send, CheckCircle2, AlertCircle, X, Award, Sparkles, Filter, Landmark, BookOpen, ShieldCheck, MapPin, Info } from 'lucide-react';
+import { UserCheck, Scale, Briefcase, Clock, Search, ArrowRight, Loader2, Send, CheckCircle2, AlertCircle, X, Award, Sparkles, Filter, Landmark, BookOpen, ShieldCheck, MapPin, Info, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const FIELD_EXPLANATIONS: Record<string, { title: string; description: string; matters: string[]; courts: string }> = {
@@ -271,6 +271,15 @@ export default function Advocates() {
                     <BookOpen size={13} /> View Full Profile & Field Details
                   </button>
 
+                  {auth.isAuthenticated && (
+                    <Link
+                      to={`/messages?user=${advocate.user?.id || advocate.userId}`}
+                      className="w-full py-2.5 neo-btn text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:text-black"
+                    >
+                      <MessageSquare size={13} /> Message Advocate
+                    </Link>
+                  )}
+
                   {existingReq ? (
                     <div className="w-full py-2 px-3 neo-inset-sm rounded-xl flex items-center justify-between text-xs">
                       <span className="text-slate-500 font-bold">Case Link:</span>
@@ -457,25 +466,36 @@ export default function Advocates() {
                 Close Profile
               </button>
 
-              {auth.user?.role === 'citizen' ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedAdvocate({ id: viewingAdvocate.user?.id || viewingAdvocate.userId, name: viewingAdvocate.user?.name || 'Advocate' });
-                    setViewingAdvocate(null);
-                  }}
-                  className="w-full sm:w-auto px-6 py-2.5 neo-btn-black font-bold rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Send size={14} className="text-white" /> Request Case Representation
-                </button>
-              ) : !auth.isAuthenticated ? (
-                <Link
-                  to="/login"
-                  className="w-full sm:w-auto px-6 py-2.5 neo-btn-black font-bold rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-1.5"
-                >
-                  <Send size={14} className="text-white" /> Sign In to Request
-                </Link>
-              ) : null}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {auth.isAuthenticated && (
+                  <Link
+                    to={`/messages?user=${viewingAdvocate.user?.id || viewingAdvocate.userId}`}
+                    className="w-full sm:w-auto px-5 py-2.5 neo-btn text-slate-800 hover:text-black font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <MessageSquare size={14} /> Message Advocate
+                  </Link>
+                )}
+
+                {auth.user?.role === 'citizen' ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedAdvocate({ id: viewingAdvocate.user?.id || viewingAdvocate.userId, name: viewingAdvocate.user?.name || 'Advocate' });
+                      setViewingAdvocate(null);
+                    }}
+                    className="w-full sm:w-auto px-6 py-2.5 neo-btn-black font-bold rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Send size={14} className="text-white" /> Request Case Representation
+                  </button>
+                ) : !auth.isAuthenticated ? (
+                  <Link
+                    to="/login"
+                    className="w-full sm:w-auto px-6 py-2.5 neo-btn-black font-bold rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-1.5"
+                  >
+                    <Send size={14} className="text-white" /> Sign In to Request
+                  </Link>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>

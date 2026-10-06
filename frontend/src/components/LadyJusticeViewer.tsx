@@ -115,7 +115,7 @@ export default function LadyJusticeViewer({ scrollProgress }: LadyJusticeViewerP
 
         // Normalize height to standard world units for balanced editorial framing
         const maxDim = Math.max(size.x, size.y, size.z);
-        const normScale = 4.50 / maxDim;
+        const normScale = 4.65 / maxDim;
         loadedModel.scale.set(normScale, normScale, normScale);
 
         // Apply rich dark bronze/obsidian texture with satin metallic highlights (Reference Lourve style)

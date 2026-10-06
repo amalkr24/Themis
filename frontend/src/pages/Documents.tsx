@@ -408,7 +408,7 @@ export default function Documents() {
                         <Eye size={12} /> Preview Proforma
                       </button>
                       <a
-                        href={`http://localhost:4000${doc.filePath}`}
+                        href={doc.filePath}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-3.5 py-1.5 neo-btn rounded-xl text-slate-800 hover:text-black text-xs font-bold transition-all flex items-center gap-1.5"

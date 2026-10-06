@@ -639,7 +639,7 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                       <div className="flex items-center gap-2">
                         {adv.certificateUrl && (
                           <a
-                            href={`http://localhost:4000${adv.certificateUrl}`}
+                            href={adv.certificateUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-3 py-1.5 rounded-xl text-xs font-bold neo-btn flex items-center gap-1"
@@ -828,7 +828,7 @@ export default function Dashboard({ user, onUpdateStatus }: DashboardProps) {
                             <Eye size={13} /> View Proforma
                           </button>
                           <a
-                            href={`http://localhost:4000${doc.filePath}`}
+                            href={doc.filePath}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"

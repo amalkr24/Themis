@@ -88,7 +88,7 @@ export default function MyDocuments() {
                     <Eye size={13} /> Preview
                   </button>
                   <a
-                    href={`http://localhost:4000${doc.filePath}`}
+                    href={doc.filePath}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-slate-950/80 hover:bg-slate-950 border border-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"

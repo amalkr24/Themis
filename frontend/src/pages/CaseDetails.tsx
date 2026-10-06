@@ -132,7 +132,7 @@ export default function CaseDetails() {
       const uForm = new FormData();
       uForm.append('file', selectedFile);
 
-      const uploadRes = await fetch('http://localhost:4000/api/upload', {
+      const uploadRes = await fetch('/api/upload', {
         method: 'POST',
         body: uForm,
       });
@@ -596,7 +596,7 @@ export default function CaseDetails() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <a
-                      href={`http://localhost:4000${doc.filePath}`}
+                      href={doc.filePath}
                       target="_blank"
                       rel="noopener noreferrer"
                       download={doc.title}

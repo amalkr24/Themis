@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from './utils/trpc.js';
@@ -32,7 +32,41 @@ import {
   User,
   Bell,
   MessageSquare,
+  Video,
 } from 'lucide-react';
+
+function ActiveConsultationBanner() {
+  const { data: activeCall } = trpc.consultations.getActiveCall.useQuery(undefined, {
+    refetchInterval: 5000,
+  });
+  const location = useLocation();
+
+  if (!activeCall || location.pathname.startsWith('/consultation/')) {
+    return null;
+  }
+
+  const otherName = activeCall.advocate?.name || activeCall.citizen?.name || 'Counsel';
+
+  return (
+    <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 text-white px-4 py-2.5 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs font-bold animate-fadeIn z-30 border-b border-emerald-500/30">
+      <div className="flex items-center gap-2">
+        <span className="flex h-2.5 w-2.5 relative">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+        </span>
+        <span>
+          Live Video Consultation in Session: <strong className="underline">{activeCall.title}</strong> with {otherName}
+        </span>
+      </div>
+      <Link
+        to={`/consultation/${activeCall.id}`}
+        className="px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-900 rounded-xl font-black transition-all shadow flex items-center gap-1.5 cursor-pointer"
+      >
+        <Video size={13} /> Enter Video Room &rarr;
+      </Link>
+    </div>
+  );
+}
 
 function MessageBell() {
   const { data } = trpc.messages.unreadCount.useQuery(undefined, {
@@ -91,7 +125,7 @@ export default function App() {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: 'http://localhost:4000/trpc',
+          url: '/trpc',
           headers() {
             const token = localStorage.getItem('themis_token');
             return {
@@ -216,6 +250,8 @@ export default function App() {
                 )}
               </div>
             </nav>
+
+            {auth.isAuthenticated && <ActiveConsultationBanner />}
 
             {/* Main Page Area */}
             <main className="flex-grow">

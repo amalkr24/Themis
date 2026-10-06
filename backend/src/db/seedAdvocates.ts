@@ -77,7 +77,7 @@ export async function seedFamousAdvocates() {
 
     // Remove legacy national mock accounts to cleanly display Kerala Advocates
     const oldNationalAdvocates = await db.query.users.findMany({
-      where: (u, { like }) => like(u.email, '%@themis.legal'),
+      where: (u, { and, like, eq }) => and(like(u.email, '%@themis.legal'), eq(u.role, 'advocate')),
     });
     for (const oldUser of oldNationalAdvocates) {
       await db.delete(users).where(eq(users.id, oldUser.id));

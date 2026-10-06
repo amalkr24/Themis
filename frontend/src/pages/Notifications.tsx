@@ -13,6 +13,8 @@ import {
   Clock,
   Sparkles,
   Inbox,
+  Video,
+  MessageSquare,
 } from 'lucide-react';
 
 export default function Notifications() {
@@ -28,8 +30,16 @@ export default function Notifications() {
       await markReadMutation.mutateAsync({ id });
       refetch();
       
-      // Navigate if relatedId is present
-      if (relatedId) {
+      // Navigate if relatedId or type is relevant
+      if (type?.startsWith('consultation')) {
+        if (relatedId) {
+          navigate(`/consultation/${relatedId}`);
+        } else {
+          navigate('/dashboard');
+        }
+      } else if (type === 'general') {
+        navigate('/messages');
+      } else if (relatedId) {
         if (type?.startsWith('case') || type === 'hearing_scheduled') {
           navigate(`/cases/${relatedId}`);
         } else if (type?.startsWith('connection')) {
@@ -59,6 +69,9 @@ export default function Notifications() {
 
   const getIcon = (type: string) => {
     switch (type) {
+      case 'consultation_started':
+      case 'consultation_scheduled':
+        return <Video size={18} className="text-emerald-600" />;
       case 'connection_request':
         return <UserPlus size={18} className="text-[#111317]" />;
       case 'connection_accepted':
@@ -69,6 +82,8 @@ export default function Notifications() {
         return <Calendar size={18} className="text-[#111317]" />;
       case 'case_update':
         return <FolderOpen size={18} className="text-[#111317]" />;
+      case 'general':
+        return <MessageSquare size={18} className="text-slate-800" />;
       default:
         return <Bell size={18} className="text-slate-600" />;
     }
@@ -191,11 +206,19 @@ export default function Notifications() {
                       {notif.type.replace('_', ' ')}
                     </span>
 
-                    {notif.relatedId && (
+                    {notif.type.startsWith('consultation') ? (
+                      <span className="text-[11px] bg-emerald-600 text-white px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 shadow-sm">
+                        <Video size={12} /> Join Live Call &rarr;
+                      </span>
+                    ) : notif.type === 'general' ? (
+                      <span className="text-[11px] text-[#111317] font-bold flex items-center gap-1 group-hover:underline">
+                        Open Chat <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                      </span>
+                    ) : notif.relatedId ? (
                       <span className="text-[11px] text-[#111317] font-bold flex items-center gap-1 group-hover:underline">
                         View item <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                       </span>
-                    )}
+                    ) : null}
 
                     {isUnread && (
                       <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-[#111317] font-bold">

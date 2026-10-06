@@ -37,7 +37,7 @@ export default function Register({ onRegisterSuccess }: RegisterProps) {
       if (role === 'advocate' && certificateFile) {
         const formData = new FormData();
         formData.append('file', certificateFile);
-        const uploadRes = await fetch('http://localhost:4000/api/upload', {
+        const uploadRes = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
         });

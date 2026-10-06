@@ -31,8 +31,18 @@ app.use(
   })
 );
 
+// Resolve upload root directory safely
+const rootDir = fs.existsSync(path.resolve(process.cwd(), 'uploads'))
+  ? process.cwd()
+  : path.resolve(process.cwd(), '..');
+const uploadsDir = path.resolve(rootDir, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Serve Static Uploads
-app.use('/uploads/*', serveStatic({ root: '../' }));
+const staticRel = path.relative(process.cwd(), rootDir).replace(/\\/g, '/') || './';
+app.use('/uploads/*', serveStatic({ root: staticRel }));
 
 // Health check endpoint
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date() }));
@@ -60,11 +70,6 @@ app.post('/api/upload', async (c) => {
     }
 
     // Save File
-    const uploadsDir = path.resolve(process.cwd(), '../uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
     const ext = file.name.split('.').pop() || 'dat';
     const fileName = `upload_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
     const filePath = path.join(uploadsDir, fileName);
@@ -98,6 +103,7 @@ const port = Number(process.env.PORT || 4000);
 serve({
   fetch: app.fetch,
   port,
+  hostname: '0.0.0.0',
 }, (info) => {
-  console.log(`[Themisis Server] running on http://localhost:${info.port}`);
+  console.log(`[Themisis Server] running on http://0.0.0.0:${info.port}`);
 });

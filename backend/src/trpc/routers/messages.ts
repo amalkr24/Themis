@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from '../trpc.js';
 import { z } from 'zod';
 import { db } from '../../db/client.js';
-import { messages, users, connectionRequests } from '../../db/schema.js';
+import { messages, users, connectionRequests, cases, advocateProfiles } from '../../db/schema.js';
 import { eq, and, or } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { createNotification } from './notifications.js';
@@ -169,6 +169,29 @@ export const messagesRouter = router({
       }
     }
 
+    // Also include partners from cases directly assigned to each other
+    const assignedCases = await db.query.cases.findMany({
+      where: or(
+        eq(cases.citizenId, currentUserId),
+        eq(cases.advocateId, currentUserId)
+      ),
+      with: {
+        citizen: { columns: { id: true, name: true, email: true, role: true } },
+        advocate: { columns: { id: true, name: true, email: true, role: true } },
+      },
+    });
+
+    for (const c of assignedCases) {
+      const otherUser = c.citizenId === currentUserId ? c.advocate : c.citizen;
+      if (otherUser && !peerMap.has(otherUser.id)) {
+        peerMap.set(otherUser.id, {
+          user: otherUser,
+          case: { id: c.id, title: c.title },
+          unreadCount: 0,
+        });
+      }
+    }
+
     // Also include anyone who has exchanged messages
     const allUserMessages = await db.query.messages.findMany({
       where: or(
@@ -205,7 +228,71 @@ export const messagesRouter = router({
     return Array.from(peerMap.values());
   }),
 
-  // 4. Unread Messages Count
+  // 4. Get specific recipient details for starting a chat
+  getRecipient: protectedProcedure
+    .input(z.object({ userId: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const targetUser = await db.query.users.findFirst({
+        where: eq(users.id, input.userId),
+        columns: { id: true, name: true, email: true, role: true },
+        with: {
+          profile: true,
+        },
+      });
+
+      if (!targetUser) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
+      }
+
+      // Find any linked case between them
+      const linkedCase = await db.query.cases.findFirst({
+        where: or(
+          and(eq(cases.citizenId, ctx.user.id), eq(cases.advocateId, input.userId)),
+          and(eq(cases.advocateId, ctx.user.id), eq(cases.citizenId, input.userId))
+        ),
+        columns: { id: true, title: true, category: true },
+      });
+
+      return {
+        ...targetUser,
+        case: linkedCase || undefined,
+      };
+    }),
+
+  // 5. List available contacts to initiate a new chat
+  listAvailableContacts: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role === 'citizen') {
+      const advs = await db.query.advocateProfiles.findMany({
+        where: eq(advocateProfiles.status, 'approved'),
+        with: {
+          user: {
+            columns: { id: true, name: true, email: true, role: true },
+          },
+        },
+      });
+
+      return advs
+        .filter((a) => a.user && a.user.id !== ctx.user.id)
+        .map((a) => ({
+          id: a.user.id,
+          name: a.user.name,
+          email: a.user.email,
+          role: a.user.role,
+          barCouncilNumber: a.barCouncilNumber,
+          practiceAreas: a.practiceAreas,
+        }));
+    }
+
+    // If advocate or admin, list all other active users
+    const allUsers = await db.query.users.findMany({
+      where: (u, { ne }) => ne(u.id, ctx.user.id),
+      columns: { id: true, name: true, email: true, role: true },
+      limit: 60,
+    });
+    return allUsers;
+  }),
+
+  // 6. Unread Messages Count
   unreadCount: protectedProcedure.query(async ({ ctx }) => {
     const unread = await db.query.messages.findMany({
       where: and(
@@ -218,7 +305,7 @@ export const messagesRouter = router({
     return { count: unread.length };
   }),
 
-  // 5. Clear Conversation between current user and target user
+  // 7. Clear Conversation between current user and target user
   clearConversation: protectedProcedure
     .input(z.object({ targetUserId: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {
@@ -237,3 +324,4 @@ export const messagesRouter = router({
       return { success: true };
     }),
 });
+
