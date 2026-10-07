@@ -22,6 +22,7 @@ export default function Documents() {
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [autoFilledFields, setAutoFilledFields] = useState<string[]>([]);
   const [previewDoc, setPreviewDoc] = useState<DocumentData | null>(null);
 
   // Advocate-specific state
@@ -44,8 +45,8 @@ export default function Documents() {
     setSelectedTemplateId(template.id);
     setPreviewDoc(null);
 
-    // Initial pre-fill
-    const initialData: Record<string, string> = {};
+    // Initial pre-fill (preserve any active formData if set by global OCR)
+    const initialData: Record<string, string> = { ...formData };
     
     // If advocate has a selected client, prefill client name
     if (isAdvocate && selectedClientId) {
@@ -59,9 +60,9 @@ export default function Documents() {
       }
     } else if (!isAdvocate && user?.name) {
       // Citizen's own name
-      if (template.category === 'rti') {
+      if (template.category === 'rti' && !initialData['applicantName']) {
         initialData['applicantName'] = user.name;
-      } else if (template.category === 'consumer') {
+      } else if (template.category === 'consumer' && !initialData['complainantName']) {
         initialData['complainantName'] = user.name;
       }
     }
@@ -95,12 +96,19 @@ export default function Documents() {
     }));
   };
 
-  const handleApplyOCR = (_extractedText: string, smartFields?: Record<string, string>) => {
+  const handleApplyOCR = (
+    _extractedText: string,
+    smartFields?: Record<string, string>,
+    filledKeys?: string[]
+  ) => {
     if (!smartFields) return;
     setFormData((prev) => ({
       ...prev,
       ...smartFields,
     }));
+    if (filledKeys && filledKeys.length > 0) {
+      setAutoFilledFields(filledKeys);
+    }
   };
 
   const currentTemplate = templates?.find((t) => t.id === selectedTemplateId);
@@ -270,8 +278,31 @@ export default function Documents() {
 
           {/* OCR Document Scanner & Extractor */}
           <div className="pt-2">
-            <DocumentOCRScanner onApplyText={handleApplyOCR} />
+            <DocumentOCRScanner
+              template={currentTemplate as any}
+              onApplyText={handleApplyOCR}
+              buttonLabel="📷 Scan Physical Bill / Notice (Groq AI Auto-Fill)"
+            />
           </div>
+
+          {/* Feedback banner when fields are auto-filled via Groq AI */}
+          {autoFilledFields.length > 0 && (
+            <div className="p-4 bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between text-xs animate-fadeIn shadow-lg">
+              <div className="flex items-center gap-2.5 text-emerald-300 font-semibold">
+                <Sparkles size={16} className="text-amber-400 animate-pulse shrink-0" />
+                <span>
+                  Groq AI Auto-Fill Active: <strong>{autoFilledFields.length} fields</strong> were accurately structured and populated into your form by Groq LLM. You can review and tweak any value below.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAutoFilledFields([])}
+                className="text-[11px] text-slate-400 hover:text-white underline cursor-pointer shrink-0 ml-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5 border-t border-slate-800/80 pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -280,9 +311,16 @@ export default function Documents() {
                   key={field.name}
                   className={field.type === 'textarea' ? 'md:col-span-2' : ''}
                 >
-                  <label className="block text-sm font-semibold text-slate-300 mb-1.5">
-                    {field.label}
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-semibold text-slate-300">
+                      {field.label}
+                    </label>
+                    {autoFilledFields.includes(field.name) && (
+                      <span className="text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                        <Sparkles size={10} className="text-amber-400" /> Groq AI Auto-filled
+                      </span>
+                    )}
+                  </div>
 
                   {field.type === 'select' ? (
                     <select
@@ -342,7 +380,33 @@ export default function Documents() {
         </div>
       ) : (
         // TEMPLATES LIST GRID
-        <div className="space-y-12">
+        <div className="space-y-8">
+          {/* Smart OCR Document Scanner & Instant Proforma Auto-Fill */}
+          <div className="p-6 bg-gradient-to-r from-amber-500/10 via-slate-900/60 to-orange-500/10 border border-amber-500/30 rounded-3xl backdrop-blur-xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-1 max-w-xl">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles size={11} /> AI OCR Document Automation
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-white">Have a physical invoice, bill, eviction notice, or court document?</h3>
+              <p className="text-xs text-slate-400">
+                Scan or upload your document. Our OCR engine will automatically detect the appropriate legal template, extract entities, and fill in the draft questionnaire instantly.
+              </p>
+            </div>
+            <div className="shrink-0 w-full md:w-auto">
+              <DocumentOCRScanner
+                allTemplates={templates}
+                onSelectTemplate={(tplId) => {
+                  const tpl = templates?.find((t) => t.id === tplId);
+                  if (tpl) handleSelectTemplate(tpl);
+                }}
+                onApplyText={handleApplyOCR}
+                buttonLabel="📷 Scan Document (Groq AI Auto-Detect & Fill)"
+              />
+            </div>
+          </div>
+
           {loadingTemplates ? (
             <div className="flex justify-center py-16">
               <Loader2 className="animate-spin text-amber-500" size={32} />

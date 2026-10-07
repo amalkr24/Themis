@@ -333,4 +333,158 @@ export const templatesRouter = router({
       orderBy: (docs, { desc }) => [desc(docs.createdAt)],
     });
   }),
+
+  parseWithAI: publicProcedure
+    .input(
+      z.object({
+        extractedText: z.string(),
+        templateTitle: z.string().optional(),
+        templateCategory: z.string().optional(),
+        fieldsSchema: z.array(z.any()).optional(),
+        allTemplates: z
+          .array(
+            z.object({
+              id: z.string(),
+              title: z.string(),
+              category: z.string(),
+              fieldsSchema: z.any().optional(),
+            })
+          )
+          .optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return {
+          success: false,
+          error: 'GROQ_API_KEY environment variable is not configured',
+        };
+      }
+      const models = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+
+      const systemPrompt = `You are an elite legal document assistant and OCR text entity extraction specialist for the Indian legal system.
+Analyze OCR text extracted from physical bills, store invoices, notices, tenancy lease agreements, RTI slips, or sworn court affidavits, and accurately populate the required form fields.
+
+CRITICAL RULES:
+1. Always format dates (purchaseDate, noticeDate, date, leaseStartDate, vacateDeadlineDate) as YYYY-MM-DD.
+2. For numeric amounts (amountPaid, monthlyRent, compensationAmount), return only numbers without currency symbols or commas.
+3. For textareas (disputeDescription, infoRequested, evictionGrounds, affidavitFacts), produce a clear, coherent, legally sound factual narrative based strictly on facts found in the document.
+4. For addresses, combine street, locality, city, and pincode if present.
+5. If a field cannot be determined, set it to an empty string "".
+6. Output ONLY a valid JSON object.`;
+
+      let userPrompt = '';
+      const schema = input.fieldsSchema || [];
+
+      if (schema.length > 0) {
+        userPrompt = `Active Document Template: "${input.templateTitle || input.templateCategory}" (Category: ${input.templateCategory})
+
+Form Fields Schema:
+${JSON.stringify(schema, null, 2)}
+
+Scanned OCR Document Text:
+"""
+${input.extractedText}
+"""
+
+Please extract and populate every field in the schema. Output JSON format:
+{
+  "${schema[0]?.name || 'field1'}": "value",
+  ...other fields,
+  "_summary": {
+    "Key Label": "Value"
+  }
+}`;
+      } else {
+        userPrompt = `Available Legal Templates:
+${JSON.stringify(input.allTemplates || [], null, 2)}
+
+Scanned OCR Document Text:
+"""
+${input.extractedText}
+"""
+
+Instructions:
+1. Determine which of the available templates best matches this document (categories: consumer, rti, agreement, affidavit).
+2. Extract all fields for the chosen template.
+3. Output JSON format:
+{
+  "detectedTemplateId": "id of the best matching template",
+  "detectedCategory": "consumer | rti | agreement | affidavit",
+  "fields": {
+    "fieldName1": "value"
+  },
+  "_summary": {
+    "Key Label": "Value"
+  }
+}`;
+      }
+
+      for (const model of models) {
+        try {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              model,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+              ],
+              response_format: { type: 'json_object' },
+              temperature: 0.1,
+              max_tokens: 1500,
+            }),
+          });
+
+          if (!res.ok) continue;
+
+          const data = (await res.json()) as any;
+          const content = data.choices?.[0]?.message?.content;
+          if (!content) continue;
+
+          const parsed = JSON.parse(content);
+          let finalFields: Record<string, string> = {};
+          const detectedTemplateId = parsed.detectedTemplateId;
+          const detectedCategory = parsed.detectedCategory;
+          const summary = parsed._summary || {};
+
+          if (schema.length > 0) {
+            delete parsed._summary;
+            for (const f of schema) {
+              const val = parsed[f.name];
+              if (val !== undefined && val !== null && String(val).trim() !== '') {
+                finalFields[f.name] = String(val).trim();
+              }
+            }
+          } else {
+            finalFields = parsed.fields || {};
+          }
+
+          finalFields['rawText'] = input.extractedText;
+          const matchedKeys = Object.keys(finalFields).filter(k => k !== 'rawText' && finalFields[k]);
+
+          return {
+            success: true,
+            fields: finalFields,
+            matchedKeys,
+            summary,
+            detectedTemplateId,
+            detectedCategory,
+            modelUsed: model,
+          };
+        } catch (err) {
+          console.warn(`Backend Groq model ${model} error:`, err);
+        }
+      }
+
+      return {
+        success: false,
+        error: 'Groq AI service unavailable',
+      };
+    }),
 });
