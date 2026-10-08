@@ -262,6 +262,5 @@ Themis provides legal information, plain-language summaries of enacted statutes,
 
 ---
 
-
 ## 📄 License
 This project is licensed under the MIT License — open for academic, educational, and public legal aid research.
